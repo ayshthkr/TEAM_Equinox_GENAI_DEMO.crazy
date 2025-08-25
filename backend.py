@@ -1,11 +1,23 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+
 from toi_utils import scrape_and_export
 from thehindustan import scrape_and_export_hindustan_times
 from thehindu_utils import scrape_hindu_news
 from thedailyjagran_utils import scrape_jagran
 
 app = FastAPI()
+
+# Enable CORS for all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods
+    allow_headers=["*"],  # Allows all headers
+)
+
 
 @app.get("/")
 def read_root():
