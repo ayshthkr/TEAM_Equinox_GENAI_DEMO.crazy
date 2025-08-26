@@ -48,7 +48,7 @@ def contentofhindu(url: str):
 
                 target = soup.find("div", class_="container article-section")
                 if not target:
-                    return {"url": url, "text": None, "error": "No article container found"}
+                    return {"url": url, "content": None, "error": "No article container found"}
 
                 full_text = target.get_text(separator="\n", strip=True)
                 lines = full_text.split("\n")
@@ -60,11 +60,11 @@ def contentofhindu(url: str):
 
                 article_text = "\n".join(article_lines)
 
-                return {"url": url, "text": article_text, "error": None}
+                return {"url": url, "content": article_text, "error": None}
             else:
-                return {"url": url, "text": None, "error": "Not scrapable"}
+                return {"url": url, "content": None, "error": "Not scrapable"}
     except (HTTPError, URLError) as e:
-        return {"url": url, "text": None, "error": str(e)}
+        return {"url": url, "content": None, "error": str(e)}
 
 
 def scrape_hindu_news():
@@ -79,7 +79,14 @@ def scrape_hindu_news():
 
         results.append(contentofhindu(link))
     print(len(results))
-    print(results)    
+    
+    import pandas as pd
+    df = pd.DataFrame(results)
+    
+    df = df[['url', 'content']]
+    df.to_csv('thehindu.csv', index=False)
+    print("saved to thehindu.csv")
+    
     return results
 
 if __name__ == "__main__":

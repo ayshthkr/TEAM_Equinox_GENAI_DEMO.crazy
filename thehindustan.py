@@ -62,7 +62,7 @@ def contentoftoi(url):
                 # ✅ Grab the main article container
                 target = soup.find("div", id="storyMainDiv")
                 if not target:
-                    return {"url": url, "text": None, "images": [], "error": "No article container found"}
+                    return {"url": url, "content": None, "images": [], "error": "No article container found"}
 
                 # ---- Extract text ----
                 full_text = target.get_text(separator="\n", strip=True)
@@ -82,22 +82,22 @@ def contentoftoi(url):
                     elif img.has_attr("data-src"):  # lazy-loaded images
                         img_urls.append(img["data-src"])
 
-                return {"url": url, "text": article_text, "images": img_urls}
+                return {"url": url, "content": article_text, "images": img_urls}
 
             else:
-                return {"url": url, "text": None, "images": [], "error": "Not HTML or bad status"}
+                return {"url": url, "content": None, "images": [], "error": "Not HTML or bad status"}
 
     except HTTPError as e:
-        return {"url": url, "text": None, "images": [], "error": f"HTTP Error {e.code}"}
+        return {"url": url, "content": None, "images": [], "error": f"HTTP Error {e.code}"}
     except URLError as e:
-        return {"url": url, "text": None, "images": [], "error": f"URL Error {e.reason}"}
+        return {"url": url, "content": None, "images": [], "error": f"URL Error {e.reason}"}
 
 
 def scrape_and_export_hindustan_times():
     """
     Scrape all .cms articles from TOI India page and return a list of dicts:
     [
-      { "url": ..., "text": ..., "images": [...], "error": ... },
+      { "url": ..., "content": ..., "images": [...], "error": ... },
       ...
     ]
     """
@@ -110,8 +110,16 @@ def scrape_and_export_hindustan_times():
         article_data = contentoftoi(link)  # already returns dict
         articles.append(article_data)
     print(len(articles))    
-    print("hindustan times-artilce",articles)
+
+    import pandas as pd
+    df = pd.DataFrame(articles)
+
+    df = df[['url', 'content']]
+    df.to_csv('thehindustan.csv', index=False)
+    print("Saved to hindu.csv")
+    
+    
     return articles
 
 if __name__ == "__main__":
-    scrape_and_export()
+    scrape_and_export_hindustan_times()

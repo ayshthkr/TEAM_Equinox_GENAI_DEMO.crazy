@@ -76,7 +76,13 @@ def scrape_and_export():
         text = contentoftoi(link)
         articles.append({"url": link, "content": text})
     print(len(articles))    
-    print(articles)
+    
+    import pandas as pd
+    df = pd.DataFrame(articles)
+    df.to_csv('toi.csv', index=False)
+    print("Saved to toi.csv")
+    
+    
     return articles
 
 

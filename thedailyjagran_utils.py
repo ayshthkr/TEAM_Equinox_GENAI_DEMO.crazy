@@ -52,11 +52,11 @@ def contentofjagran(url: str):
 
                 outer = soup.find("div", class_="container px-6 lg:px-0 pt-6 lg:pt-6 pb-6 lg:pb-10")
                 if not outer:
-                    return {"url": url, "text": None, "images": [], "error": "Outer container not found"}
+                    return {"url": url, "content": None, "images": [], "error": "Outer container not found"}
 
                 target = outer.find("div", class_="flex justify-between flex-wrap")
                 if not target:
-                    return {"url": url, "text": None, "images": [], "error": "Inner container not found"}
+                    return {"url": url, "content": None, "images": [], "error": "Inner container not found"}
 
                 # ---- Extract text ----
                 full_text = target.get_text(separator="\n", strip=True)
@@ -76,12 +76,12 @@ def contentofjagran(url: str):
                     elif img.has_attr("data-src"):
                         img_urls.append(img["data-src"])
 
-                return {"url": url, "text": article_text, "images": img_urls, "error": None}
+                return {"url": url, "content": article_text, "images": img_urls, "error": None}
 
             else:
-                return {"url": url, "text": None, "images": [], "error": "Not scrapable"}
+                return {"url": url, "content": None, "images": [], "error": "Not scrapable"}
     except (HTTPError, URLError) as e:
-        return {"url": url, "text": None, "images": [], "error": str(e)}
+        return {"url": url, "content": None, "images": [], "error": str(e)}
 
 
 def scrape_jagran():
@@ -94,7 +94,14 @@ def scrape_jagran():
     for link in links:
         print(f"Scraping: {link}")
         results.append(contentofjagran(link))
-    print(results)    
+    
+    import pandas as pd
+    df = pd.DataFrame(results)
+    df = df[['url', 'content']]
+    df.to_csv('thedailyjagran.csv', index=False)
+    print("saved to daily.csv")
+    
     return results
 
-scrape_jagran()
+if __name__ == "__main__":
+    scrape_jagran()
