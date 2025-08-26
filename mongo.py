@@ -18,26 +18,22 @@ def save_csvs_to_mongo(csv_paths, mongo_uri="xxx", db_name="mydb"):
             content = str(record["content"])
             now = datetime.now(timezone.utc).isoformat()
 
-            # Use pipeline update (MongoDB 4.2+)
             ops.append(UpdateOne(
                 {"url": url},
                 [
                     {
                         "$set": {
+                            # If no content exists yet, just use the new one
                             "content": {
-                                "$concat": [
-                                   {"$ifNull": ["$content", ""]},
-                                    "\n",
-                                    content
-                                ]
+                               "$cond": {
+                                    "if": {"$ifNull": ["$content", False]},
+                                    "then": {"$concat": ["$content", "\n", content]},
+                                    "else": content
+                                }
                             },
                             "source": source,
-                            "updatedAt": now
-                        }
-                    },
-                    {
-                        "$setOnInsert": {
-                            "createdAt": now
+                            "updatedAt": now,
+                            "createdAt": {"$ifNull": ["$createdAt", now]}
                         }
                     }
                 ],
@@ -45,7 +41,7 @@ def save_csvs_to_mongo(csv_paths, mongo_uri="xxx", db_name="mydb"):
             ))
 
         if ops:
-            collection.bulk_write(ops)
+            result = collection.bulk_write(ops)
+            print(f"{csv_file} -> inserted: {result.upserted_count}, modified: {result.modified_count}")
 
-    print("Docs saved to MongoDB.")
     client.close()
