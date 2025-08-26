@@ -114,7 +114,7 @@ def scrape_and_export_hindustan_times():
     import pandas as pd
     df = pd.DataFrame(articles)
 
-    df = df[['url', 'content']]
+    df = df[['url', 'content','images']]
     df.to_csv('thehindustan.csv', index=False)
     print("Saved to hindu.csv")
     
