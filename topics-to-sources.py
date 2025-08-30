@@ -340,7 +340,8 @@ def pipeline_process(
     exa_collection="exa_headlines",
     hours=24,
     similarity_threshold=0.7,
-    headline_limit=5
+    headline_limit=5,
+    top_news=20
 ):
     """
     Complete pipeline:
@@ -380,7 +381,7 @@ def pipeline_process(
     df_search, df_final = process_and_merge_headlines(cluster_groups)
 
     # --- 5. Fetch Exa content for top headlines ---
-    final_headlines_list = [h.strip() for h in df_final["final_headlines"].iloc[0].split(",") if h.strip()]
+    final_headlines_list = [h.strip() for h in df_final["final_headlines"].iloc[0].split(",") if h.strip()][:top_news]
     
     # Fetch & save to MongoDB
     fetch_and_save_exa(
