@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from pymongo import MongoClient
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
-import datetime
+
 import ast
 import pandas as pd
 import numpy as np
@@ -129,7 +129,14 @@ def cluster_docs_by_similarity_df(df, threshold=0.7, top_n_words=50):
     Returns:
         clusters (list of dicts): Each cluster has URLs, contents, and similarity info.
     """
-    embeddings = np.vstack(df["embedding"].apply(eval).values)
+    def safe_eval(x):
+        if isinstance(x, str):
+            return eval(x)
+        elif isinstance(x, list):
+            return x
+        else:
+            return []
+    embeddings = np.vstack(df["embedding"].apply(safe_eval).values)
     sim_matrix = cosine_similarity(embeddings)
 
     visited = set()
@@ -264,8 +271,8 @@ Headlines:
 
 
 from exa_py import Exa
-import datetime
-from pymongo import MongoClient
+
+
 import pprint
 
 def fetch_and_save_exa(headlines, 
@@ -302,8 +309,8 @@ def fetch_and_save_exa(headlines,
         else:
             return obj
 
-    now = datetime.datetime.utcnow()
-    start_dt = now - datetime.timedelta(days=1)
+    now = datetime.utcnow()
+    start_dt = now - timedelta(days=1)
     start_date = start_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
     end_date = now.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
@@ -326,7 +333,7 @@ def fetch_and_save_exa(headlines,
             collection.insert_one({
                 "headline": head,
                 "results": serialized,
-                "fetched_at": datetime.datetime.utcnow()
+                "fetched_at": datetime.utcnow()
             })
             print(f"✅ Saved results to MongoDB collection: {collection_name}\n")
 
@@ -360,7 +367,8 @@ def pipeline_process(
     cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     docs = list(coll.find())
     recent_docs = [
-        d for d in docs if datetime.fromisoformat(d.get("createdAt")) >= cutoff
+        d for d in docs
+        if datetime.fromisoformat(d["createdAt"]) >= cutoff
     ]
     if not recent_docs:
         print("No recent documents found.")
@@ -395,3 +403,5 @@ def pipeline_process(
     print("✅ Pipeline completed successfully.")
     client.close()
     return df_search, df_final
+
+pipeline_process()
