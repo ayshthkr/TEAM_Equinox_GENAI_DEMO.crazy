@@ -197,8 +197,9 @@ You are a search query/headline generator.
 Task:
 - Receive multiple article snippets grouped into the same cluster.
 - If coherent, generate 1 concise headline summarizing the cluster.
-- If mixed topics, generate multiple short headlines.
+- If mixed topics, generate multiple  headlines.
 - If content is empty, return null (no dialogue).
+- must be coherent not just a single word
 - Headlines should be concise, keyword-rich, not full sentences.
 
 Content:
@@ -210,7 +211,7 @@ Return ONLY a comma-separated list of headlines. Nothing else.
         retries = 3
         for attempt in range(retries):
             try:
-                model = genai.GenerativeModel("gemini-2.0-flash-lite")
+                model = genai.GenerativeModel("gemini-2.5-pro")
                 response = model.generate_content(prompt)
                 terms = response.text.strip()
                 break
@@ -218,7 +219,9 @@ Return ONLY a comma-separated list of headlines. Nothing else.
                 print(f"⚠️ Error with key: {e}, rotating key...")
                 set_next_key()
                 terms = f"ERROR: {e}"
-                time.sleep(8)
+                time.sleep(15)
+        time.sleep(2)        
+             
 
         print(f"Cluster {cluster_id} → {terms}")
         search_terms.append({"cluster_id": cluster_id, "search_terms": terms})
@@ -248,7 +251,7 @@ Headlines:
     retries = 3
     for attempt in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.5-pro")
             response = model.generate_content(merge_prompt)
             final_headlines = response.text.strip()
             break
@@ -256,7 +259,8 @@ Headlines:
             print(f"⚠️ Error in merge step: {e}, rotating key...")
             set_next_key()
             final_headlines = f"ERROR: {e}"
-            time.sleep(2)
+            time.sleep(15)
+        time.sleep(2)
 
     print("🔗 Final Merged Headlines:")
     print(final_headlines)
@@ -332,7 +336,7 @@ def fetch_and_save_exa(headlines,
             # Save to constant MongoDB collection
             collection.insert_one({
                 "headline": head,
-                "results": serialized,
+                "results": result,
                 "fetched_at": datetime.utcnow()
             })
             print(f"✅ Saved results to MongoDB collection: {collection_name}\n")
@@ -348,7 +352,7 @@ def pipeline_process(
     hours=24,
     similarity_threshold=0.7,
     headline_limit=5,
-    top_news=20
+    top_news=100
 ):
     """
     Complete pipeline:
@@ -385,11 +389,15 @@ def pipeline_process(
     print("🔍 Clustering documents...")
     clusters = cluster_docs_by_similarity_df(df_docs, threshold=similarity_threshold)
 
+    # Sort clusters by size (number of docs) and pick top 20
+    clusters_sorted = sorted(clusters, key=lambda x: len(x["docs"]), reverse=True)[:20]
+
     # Prepare DataFrame for headline generation
     cluster_groups = pd.DataFrame([
         {"cluster_id": c["cluster_id"], "content": " ".join([d["content"] for d in c["docs"]])}
-        for c in clusters
+        for c in clusters_sorted
     ])
+    print(f"Processing top {len(cluster_groups)} clusters by size:")
     print(cluster_groups.head())
 
     # --- 3 & 4. Generate & merge headlines ---
