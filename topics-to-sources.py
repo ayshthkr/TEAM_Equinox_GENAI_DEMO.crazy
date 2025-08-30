@@ -360,6 +360,7 @@ def pipeline_process(
     """
 
     # --- 1. Fetch recent docs ---
+    print("🔍 Fetching recent documents from MongoDB...")
     client = MongoClient(mongo_uri)
     db = client[db_name]
     coll = db[scraped_collection]
@@ -375,8 +376,13 @@ def pipeline_process(
         return
 
     df_docs = pd.DataFrame(recent_docs)
+    print(f"✅ Fetched {len(df_docs)} recent documents."
+    )
+    print(df_docs.head())
+
 
     # --- 2. Cluster docs ---
+    print("🔍 Clustering documents...")
     clusters = cluster_docs_by_similarity_df(df_docs, threshold=similarity_threshold)
 
     # Prepare DataFrame for headline generation
@@ -384,14 +390,17 @@ def pipeline_process(
         {"cluster_id": c["cluster_id"], "content": " ".join([d["content"] for d in c["docs"]])}
         for c in clusters
     ])
+    print(cluster_groups.head())
 
     # --- 3 & 4. Generate & merge headlines ---
+    print("generating headlines 🗞️🗞️🗞️")
     df_search, df_final = process_and_merge_headlines(cluster_groups)
 
     # --- 5. Fetch Exa content for top headlines ---
     final_headlines_list = [h.strip() for h in df_final["final_headlines"].iloc[0].split(",") if h.strip()][:top_news]
     
     # Fetch & save to MongoDB
+    print("🔍 Fetching Exa content for top headlines...")
     fetch_and_save_exa(
         headlines=final_headlines_list,
         mongo_uri=mongo_uri,
