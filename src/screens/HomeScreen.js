@@ -46,14 +46,23 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const loadArticles = () => {
-    const allArticles = convertJsonToAppFormat();
-    const filteredArticles =
-      selectedCategory === 'All'
-        ? allArticles
-        : allArticles.filter(
-            (article) => article.category === selectedCategory
-          );
-    setArticles(filteredArticles);
+    try {
+      const allArticles = convertJsonToAppFormat();
+      console.log('Loaded articles count:', allArticles.length);
+
+      const filteredArticles =
+        selectedCategory === 'All'
+          ? allArticles
+          : allArticles.filter(
+              (article) => article.category === selectedCategory
+            );
+
+      console.log('Filtered articles count:', filteredArticles.length);
+      setArticles(filteredArticles);
+    } catch (error) {
+      console.error('Error loading articles:', error);
+      setArticles([]);
+    }
   };
 
   const onRefresh = React.useCallback(() => {
@@ -84,13 +93,23 @@ const HomeScreen = ({ navigation }) => {
       </Appbar.Header>
 
       {/* Category Tabs */}
-      <View style={styles.tabsWrapper}>
+      {viewMode === 'scroll' && (
+        <View style={styles.tabsWrapper}>
+          <CategoryTabs
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
+        </View>
+      )}
+
+      {/* <View style={styles.tabsWrapper}>
         <CategoryTabs
           categories={categories}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
         />
-      </View>
+      </View> */}
 
       {/* News Feed */}
       {viewMode === 'swipe' ? (
@@ -156,6 +175,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     backgroundColor: Colors.background.secondary,
     borderBottomWidth: 1,
+    height: 60,
     borderBottomColor: Colors.border.primary,
   },
   headerTitle: {

@@ -61,8 +61,10 @@ const SwipeIndicator = ({ visible = true }) => {
           },
         ]}
       >
-        <Ionicons name="chevron-up" size={24} color="#D0D0D0" />
-        <Text style={styles.text}>Swipe up for next</Text>
+        <Ionicons name="chevron-up" size={20} color="#FFFFFF" />
+        <Text style={styles.text}>Swipe up</Text>
+        <Ionicons name="chevron-down" size={20} color="#FFFFFF" />
+        <Text style={styles.text}>Swipe down</Text>
       </Animated.View>
     </View>
   );
@@ -71,33 +73,31 @@ const SwipeIndicator = ({ visible = true }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 30,
-    left: 0,
-    right: 0,
+    bottom: 150,
+    right: 20,
     alignItems: 'center',
     zIndex: 1000,
   },
   indicator: {
     alignItems: 'center',
-    backgroundColor: 'rgba(42, 42, 42, 0.95)', // Dark background
-    paddingHorizontal: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#606060',
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
   },
   text: {
-    fontSize: 12,
-    color: '#D0D0D0', // Light text for dark theme
-    marginTop: 2,
+    fontSize: 10,
+    color: '#FFFFFF',
+    marginVertical: 2,
+    fontWeight: '500',
   },
 });
 

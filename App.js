@@ -9,9 +9,11 @@ import { StatusBar } from 'expo-status-bar';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
+import ReelsScreen from './src/screens/ReelsScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import BiasAnalyticsScreen from './src/screens/BiasAnalyticsScreen';
 import ArticleDetailScreen from './src/screens/ArticleDetailScreen';
+import Colors from './src/constants/colors';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -25,6 +27,8 @@ function TabNavigator() {
           let iconName;
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Reels') {
+            iconName = focused ? 'play-circle' : 'play-circle-outline';
           } else if (route.name === 'Search') {
             iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'Analytics') {
@@ -32,12 +36,25 @@ function TabNavigator() {
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#2196F3',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: Colors.accent.primary,
+        tabBarInactiveTintColor: Colors.text.tertiary,
         headerShown: false,
+        tabBarStyle: {
+          backgroundColor: Colors.background.secondary ,
+          borderTopWidth: 0,
+          elevation: 0,
+          height: 60,
+        },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} headerShown={false} />
+      <Tab.Screen
+        name="Reels"
+        component={ReelsScreen}
+        options={{
+          tabBarLabel: 'Reels',
+        }}
+      />
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Analytics" component={BiasAnalyticsScreen} />
     </Tab.Navigator>
@@ -59,7 +76,7 @@ export default function App() {
           <Stack.Screen 
             name="ArticleDetail" 
             component={ArticleDetailScreen}
-            options={{ title: 'Article Details' }}
+            options={{ headerShown: false }}
           />
         </Stack.Navigator>
       </NavigationContainer>

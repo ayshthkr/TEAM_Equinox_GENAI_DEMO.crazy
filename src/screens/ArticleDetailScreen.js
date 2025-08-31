@@ -9,6 +9,7 @@ import {
   Share,
   Linking,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { Appbar, Card, Chip, IconButton, Divider } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -66,13 +67,37 @@ const ArticleDetailScreen = ({ route, navigation }) => {
   const formatScore = (score) => {
     return Math.round(score * 100);
   };
+
+  const getScoreColor = (score) => {
+    if (score >= 0.8) return Colors.status.verified;
+    if (score >= 0.6) return Colors.status.disputed;
+    return Colors.status.false;
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['right', 'left']}>
       <Appbar.Header style={styles.header}>
-        <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title="Article Details" titleStyle={styles.headerTitle} />
-        <Appbar.Action icon="share-variant" onPress={handleShare} />
-        <Appbar.Action icon="open-in-new" onPress={handleOpenUrl} />
+        <Appbar.BackAction 
+          onPress={() => navigation.goBack()} 
+          color={Colors.text.primary}
+          size={24}
+        />
+        <Appbar.Content 
+          title="Article Details" 
+          titleStyle={styles.headerTitle}
+        />
+        <Appbar.Action 
+          icon="share-variant" 
+          onPress={handleShare} 
+          color={Colors.text.primary}
+          size={24}
+        />
+        <Appbar.Action 
+          icon="open-in-new" 
+          onPress={handleOpenUrl} 
+          color={Colors.text.primary}
+          size={24}
+        />
       </Appbar.Header>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -113,7 +138,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
                 )}
                 <Text style={styles.sourceText}>{article.source}</Text>
                 {article.author && (
-                  <Text style={styles.authorText}>by {article.author}</Text>
+                  <Text style={styles.authorText}>• by {article.author}</Text>
                 )}
               </View>
               <Text style={styles.timeText}>{getTimeAgo(article.timestamp)}</Text>
@@ -123,7 +148,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
           <Divider style={styles.divider} />
 
           {/* Article Summary */}
-          <Card style={styles.summaryCard}>
+          <Card style={styles.summaryCard} elevation={1}>
             <Card.Content>
               <Text style={styles.summaryTitle}>Summary</Text>
               <Text style={styles.summaryText}>{article.summary}</Text>
@@ -131,41 +156,63 @@ const ArticleDetailScreen = ({ route, navigation }) => {
           </Card>
 
           {/* Analysis Section */}
-          <Card style={styles.analysisCard}>
+          <Card style={styles.analysisCard} elevation={1}>
             <Card.Content>
-              <Text style={styles.analysisTitle}>Analysis</Text>
-
-              <View style={styles.analysisRow}>
-                <Text style={styles.analysisLabel}>Credibility Score:</Text>
-                <View style={styles.scoreContainer}>
-                  <Text style={styles.scoreText}>{formatScore(article.score)}/100</Text>
-                </View>
-              </View>
-
-              <View style={styles.analysisRow}>
-                <Text style={styles.analysisLabel}>Political Bias:</Text>
-                <BiasIndicator bias={article.bias} />
-              </View>
-
-              <View style={styles.analysisRow}>
-                <Text style={styles.analysisLabel}>Fact Check:</Text>
+              <View style={styles.analysisHeader}>
+                <Text style={styles.analysisTitle}>Credibility Analysis</Text>
                 <IconButton
-                  icon="information"
+                  icon="information-outline"
                   size={16}
                   onPress={() => setShowFactCheckModal(true)}
-                  style={styles.infoButton}
+                  style={styles.infoIcon}
+                  iconColor={Colors.text.secondary}
                 />
-                <FactCheckBadge
-                  status={article.factCheck.status}
-                  confidence={article.factCheck.confidence}
-                />
+              </View>
+
+              <View style={styles.analysisGrid}>
+                {/* Credibility Score */}
+                <View style={styles.analysisItem}>
+                  <Text style={styles.analysisLabel}>Credibility Score</Text>
+                  <View style={[styles.scoreContainer, { backgroundColor: getScoreColor(article.score) + '20' }]}>
+                    <Text style={[styles.scoreText, { color: getScoreColor(article.score) }]}>
+                      {formatScore(article.score)}/100
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Political Bias */}
+                <View style={styles.analysisItem}>
+                  <Text style={styles.analysisLabel}>Political Bias</Text>
+                  <BiasIndicator bias={article.bias} />
+                </View>
+
+                {/* Fact Check */}
+                <View style={styles.analysisItem}>
+                  <Text style={styles.analysisLabel}>Fact Check</Text>
+                  <FactCheckBadge
+                    status={article.factCheck.status}
+                    confidence={article.factCheck.confidence}
+                  />
+                </View>
+
+                {/* Category */}
+                <View style={styles.analysisItem}>
+                  <Text style={styles.analysisLabel}>Category</Text>
+                  <Chip
+                    mode="outlined"
+                    style={[styles.categoryBadge, { borderColor: getBiasColor(article.bias) }]}
+                    textStyle={[styles.categoryBadgeText, { color: getBiasColor(article.bias) }]}
+                  >
+                    {article.category}
+                  </Chip>
+                </View>
               </View>
             </Card.Content>
           </Card>
 
           {/* Full Article Text */}
           {article.originalText && (
-            <Card style={styles.textCard}>
+            <Card style={styles.textCard} elevation={1}>
               <Card.Content>
                 <Text style={styles.textTitle}>Full Article</Text>
                 <Text style={styles.fullText}>{article.originalText}</Text>
@@ -175,27 +222,35 @@ const ArticleDetailScreen = ({ route, navigation }) => {
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
-            <IconButton
-              icon="share-variant"
-              mode="contained"
-              onPress={handleShare}
-              style={styles.actionButton}
-              iconColor={Colors.text.primary}
-            />
-            <IconButton
-              icon="bookmark-outline"
-              mode="contained"
-              onPress={() => {/* Handle bookmark */}}
-              style={styles.actionButton}
-              iconColor={Colors.text.primary}
-            />
-            <IconButton
-              icon="open-in-new"
-              mode="contained"
-              onPress={handleOpenUrl}
-              style={styles.actionButton}
-              iconColor={Colors.text.primary}
-            />
+            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+              <IconButton
+                icon="share-variant"
+                size={20}
+                iconColor={Colors.text.primary}
+                style={styles.actionIcon}
+              />
+              <Text style={styles.actionText}>Share</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionButton} onPress={() => {}}>
+              <IconButton
+                icon="bookmark-outline"
+                size={20}
+                iconColor={Colors.text.primary}
+                style={styles.actionIcon}
+              />
+              <Text style={styles.actionText}>Save</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionButton} onPress={handleOpenUrl}>
+              <IconButton
+                icon="open-in-new"
+                size={20}
+                iconColor={Colors.text.primary}
+                style={styles.actionIcon}
+              />
+              <Text style={styles.actionText}>Open</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -216,21 +271,25 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: Colors.background.secondary,
-    elevation: 4,
+    elevation: 0,
+    shadowOpacity: 0,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border.primary,
   },
   headerTitle: {
     color: Colors.text.primary,
     fontWeight: '600',
+    fontSize: 18,
+    letterSpacing: -0.5,
   },
   scrollView: {
     flex: 1,
   },
   imageContainer: {
     position: 'relative',
-    height: 250,
+    height: 280,
     width: '100%',
+    backgroundColor: Colors.background.tertiary,
   },
   heroImage: {
     width: '100%',
@@ -238,151 +297,194 @@ const styles = StyleSheet.create({
   },
   imageOverlay: {
     position: 'absolute',
-    top: 16,
-    left: 16,
+    top: 20,
+    left: 20,
   },
   categoryChip: {
-    height: 28,
-    paddingHorizontal: 12,
+    height: 32,
+    paddingHorizontal: 16,
+    borderRadius: 16,
   },
   categoryChipText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: Colors.text.primary,
   },
   content: {
-    padding: 16,
+    padding: 20,
   },
   articleHeader: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '700',
     color: Colors.text.primary,
-    lineHeight: 32,
-    marginBottom: 12,
+    lineHeight: 34,
+    marginBottom: 16,
+    letterSpacing: -0.5,
   },
   metaInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   sourceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    flexWrap: 'wrap',
   },
   favicon: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    marginRight: 8,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    marginRight: 10,
+    backgroundColor: Colors.background.tertiary,
   },
   sourceText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: Colors.text.secondary,
+    marginRight: 8,
   },
   authorText: {
-    fontSize: 12,
+    fontSize: 14,
     color: Colors.text.tertiary,
-    marginLeft: 8,
     fontStyle: 'italic',
   },
   timeText: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.text.tertiary,
+    fontWeight: '500',
   },
   divider: {
     backgroundColor: Colors.border.primary,
-    marginVertical: 16,
+    marginVertical: 20,
+    height: 1,
   },
   summaryCard: {
-    backgroundColor: Colors.background.tertiary,
-    marginBottom: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.border.primary,
+    backgroundColor: Colors.background.secondary,
+    marginBottom: 20,
+    borderRadius: 16,
+    borderWidth: 0,
+    elevation: 2,
   },
   summaryTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: Colors.text.primary,
-    marginBottom: 8,
+    marginBottom: 12,
+    letterSpacing: -0.5,
   },
   summaryText: {
-    fontSize: 15,
+    fontSize: 16,
     color: Colors.text.secondary,
-    lineHeight: 22,
+    lineHeight: 24,
+    letterSpacing: 0.2,
   },
   analysisCard: {
-    backgroundColor: Colors.background.tertiary,
-    marginBottom: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.border.primary,
+    backgroundColor: Colors.background.secondary,
+    marginBottom: 20,
+    borderRadius: 16,
+    borderWidth: 0,
+    elevation: 2,
   },
-  analysisTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text.primary,
-    marginBottom: 12,
-  },
-  analysisRow: {
+  analysisHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  analysisTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.text.primary,
+    letterSpacing: -0.5,
+  },
+  infoIcon: {
+    margin: 0,
+  },
+  analysisGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  analysisItem: {
+    width: '48%',
+    marginBottom: 16,
   },
   analysisLabel: {
     fontSize: 14,
     color: Colors.text.secondary,
-    width: 120,
+    marginBottom: 8,
+    fontWeight: '500',
   },
   scoreContainer: {
-    backgroundColor: Colors.accent.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginLeft: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
   },
   scoreText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  categoryBadge: {
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+  },
+  categoryBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.text.primary,
-  },
-  infoButton: {
-    margin: 0,
-    marginLeft: 8,
   },
   textCard: {
-    backgroundColor: Colors.background.tertiary,
-    marginBottom: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.border.primary,
+    backgroundColor: Colors.background.secondary,
+    marginBottom: 20,
+    borderRadius: 16,
+    borderWidth: 0,
+    elevation: 2,
   },
   textTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: Colors.text.primary,
-    marginBottom: 12,
+    marginBottom: 16,
+    letterSpacing: -0.5,
   },
   fullText: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.text.secondary,
-    lineHeight: 20,
+    lineHeight: 22,
+    letterSpacing: 0.2,
   },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
-    marginTop: 16,
-    marginBottom: 32,
+    gap: 24,
+    marginTop: 24,
+    marginBottom: 40,
   },
   actionButton: {
+    alignItems: 'center',
     backgroundColor: Colors.surface.primary,
-    borderRadius: 24,
+    padding: 12,
+    borderRadius: 20,
+    minWidth: 80,
+    elevation: 2,
+  },
+  actionIcon: {
+    margin: 0,
+  },
+  actionText: {
+    fontSize: 12,
+    color: Colors.text.primary,
+    fontWeight: '500',
+    marginTop: 4,
   },
 });
 

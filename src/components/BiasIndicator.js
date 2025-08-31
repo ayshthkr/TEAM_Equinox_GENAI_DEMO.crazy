@@ -1,6 +1,7 @@
 // src/components/BiasIndicator.js
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Colors from '../constants/colors';
 
 const BiasIndicator = ({ bias }) => {
   const getBiasConfig = (biasType) => {
@@ -16,63 +17,156 @@ const BiasIndicator = ({ bias }) => {
     }
   };
 
-  const config = getBiasConfig(bias);
+const getStaticDistribution = (bias) => {
+    switch (bias.toLowerCase()) {
+      case 'left':
+        return { left: 65, center: 20, right: 15 };
+      case 'center':
+        return { left: 25, center: 50, right: 25 };
+      case 'right':
+        return { left: 15, center: 20, right: 65 };
+      default:
+        return { left: 33, center: 34, right: 33 };
+    }
+  };
 
-  return (
+  const config = getBiasConfig(bias);
+  const distribution = getStaticDistribution(bias);
+  const total = distribution.left + distribution.center + distribution.right;
+   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Bias</Text>
-      <View style={styles.slider}>
-        <View style={styles.track} />
-        <View 
-          style={[
-            styles.indicator,
-            { 
-              backgroundColor: config.color,
-              left: `${config.position}%`,
-            }
-          ]} 
-        />
+      {/* Distribution Bars */}
+      <View style={styles.distributionContainer}>
+        <View style={styles.barsContainer}>
+          <View 
+            style={[
+              styles.bar, 
+              styles.leftBar, 
+              { width: total > 0 ? `${(distribution.left / total) * 100}%` : '0%' }
+            ]} 
+          />
+          <View 
+            style={[
+              styles.bar, 
+              styles.centerBar, 
+              { width: total > 0 ? `${(distribution.center / total) * 100}%` : '0%' }
+            ]} 
+          />
+          <View 
+            style={[
+              styles.bar, 
+              styles.rightBar, 
+              { width: total > 0 ? `${(distribution.right / total) * 100}%` : '0%' }
+            ]} 
+          />
+        </View>
+        
+        {/* Labels */}
+        <View style={styles.labelsContainer}>
+          <Text style={[styles.label, styles.leftLabel]}>
+            Left {distribution.left}%
+          </Text>
+          <Text style={[styles.label, styles.centerLabel]}>
+            Center {distribution.center}%
+          </Text>
+          <Text style={[styles.label, styles.rightLabel]}>
+            Right {distribution.right}%
+          </Text>
+        </View>
       </View>
-      <Text style={[styles.biasText, { color: config.color }]}>
-        {config.label}
-      </Text>
+
+      {/* Current Bias Indicator */}
+      <View style={styles.currentBiasContainer}>
+        <Text style={styles.currentBiasLabel}>Current Article Bias:</Text>
+        <View style={styles.currentBias}>
+          <View 
+            style={[
+              styles.biasDot, 
+              { backgroundColor: config.color }
+            ]} 
+          />
+          <Text style={[styles.biasText, { color: config.color }]}>
+            {config.label}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
+  },
+  distributionContainer: {
+    width: '100%',
+    marginBottom: 12,
+  },
+  barsContainer: {
+    flexDirection: 'row',
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    backgroundColor: Colors.background.tertiary,
+    marginBottom: 8,
+  },
+  bar: {
+    height: '100%',
+  },
+  leftBar: {
+    backgroundColor: Colors.bias.left,
+  },
+  centerBar: {
+    backgroundColor: Colors.bias.center,
+  },
+  rightBar: {
+    backgroundColor: Colors.bias.right,
+  },
+  labelsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   label: {
     fontSize: 10,
-    color: '#B0B0B0', // Light gray for dark theme
-    marginBottom: 4,
+    fontWeight: '500',
   },
-  slider: {
-    width: 60,
-    height: 4,
-    position: 'relative',
-    marginBottom: 4,
+  leftLabel: {
+    color: Colors.bias.left,
   },
-  track: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#404040', // Darker track for dark theme
-    borderRadius: 2,
+  centerLabel: {
+    color: Colors.bias.center,
   },
-  indicator: {
-    position: 'absolute',
+  rightLabel: {
+    color: Colors.bias.right,
+  },
+  currentBiasContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width:
+
+ '100%',
+  },
+  currentBiasLabel: {
+    fontSize: 12,
+    color: Colors.text.secondary,
+    fontWeight: '500',
+  },
+  currentBias: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  biasDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    top: -2,
-    marginLeft: -4,
   },
   biasText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
   },
 });
 
 export default BiasIndicator;
+

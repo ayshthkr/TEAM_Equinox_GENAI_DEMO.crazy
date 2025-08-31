@@ -1,8 +1,7 @@
 // src/constants/colors.js
-// Ground News inspired color theme
+
 
 export const Colors = {
-  // Professional dark theme colors inspired by Ground News
   background: {
     primary: '#0F0F0F',      // Deep black main background
     secondary: '#1A1A1A',     // Card/header backgrounds

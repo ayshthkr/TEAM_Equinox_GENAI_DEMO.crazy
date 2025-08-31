@@ -11,28 +11,28 @@ import {
 } from 'react-native';
 import NewsCard from './NewsCard';
 import SwipeIndicator from './SwipeIndicator';
+import Colors from '../constants/colors';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-const CARD_HEIGHT = screenHeight * 0.85; // 85% of screen height
+const CARD_HEIGHT = screenHeight * 0.80;
 const SWIPE_THRESHOLD = 120;
 
 const SwipableCardContainer = ({ articles, navigation, onSwipeUp, onSwipeDown }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showIndicator, setShowIndicator] = useState(true);
+  const [isSwipingBack, setIsSwipingBack] = useState(false);
+
   const position = useRef(new Animated.ValueXY()).current;
   const opacity = useRef(new Animated.Value(1)).current;
+  // previous card starts above the screen
+  const previousCardPosition = useRef(new Animated.Value(-screenHeight)).current;
 
   useEffect(() => {
-    // Hide indicator after first swipe or after 5 seconds
-    const timer = setTimeout(() => {
-      setShowIndicator(false);
-    }, 5000);
-
+    const timer = setTimeout(() => setShowIndicator(false), 3000);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    // Hide indicator after user starts swiping
     if (currentIndex > 0) {
       setShowIndicator(false);
     }
@@ -40,8 +40,8 @@ const SwipableCardContainer = ({ articles, navigation, onSwipeUp, onSwipeDown })
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dy) > 5;
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dy) > 10;
       },
       onPanResponderGrant: () => {
         position.setOffset({
@@ -49,124 +49,125 @@ const SwipableCardContainer = ({ articles, navigation, onSwipeUp, onSwipeDown })
           y: position.y._value,
         });
       },
-      onPanResponderMove: (evt, gestureState) => {
-        position.setValue({ x: 0, y: gestureState.dy });
-        
-        // Update opacity based on swipe distance
-        const swipeProgress = Math.abs(gestureState.dy) / SWIPE_THRESHOLD;
-        opacity.setValue(Math.max(0.3, 1 - swipeProgress * 0.7));
+      onPanResponderMove: (_, gestureState) => {
+        const dy = gestureState.dy;
+        position.setValue({ x: 0, y: dy });
+
+        const swipeProgress = Math.abs(dy) / SWIPE_THRESHOLD;
+        opacity.setValue(Math.max(0.4, 1 - swipeProgress * 0.6));
+
+        // pulling previous card down
+        if (dy > 0 && currentIndex > 0) {
+          if (!isSwipingBack) {
+            setIsSwipingBack(true);
+            previousCardPosition.setValue(-screenHeight);
+          }
+          previousCardPosition.setValue(Math.min(0, -screenHeight + dy));
+        } else if (isSwipingBack) {
+          previousCardPosition.setValue(-screenHeight);
+          setIsSwipingBack(false);
+        }
       },
-      onPanResponderRelease: (evt, gestureState) => {
+      onPanResponderRelease: (_, gestureState) => {
         position.flattenOffset();
-        
-        if (gestureState.dy > SWIPE_THRESHOLD) {
-          // Swipe down - go to previous article
-          swipeDown();
-        } else if (gestureState.dy < -SWIPE_THRESHOLD) {
-          // Swipe up - go to next article
-          swipeUp();
+
+        const velocity = gestureState.vy;
+        const distance = gestureState.dy;
+        const shouldSwipe =
+          Math.abs(velocity) > 0.5 || Math.abs(distance) > SWIPE_THRESHOLD;
+
+        if (shouldSwipe) {
+          if (distance > 0) {
+            // Swipe down - go to previous card
+            if (currentIndex > 0) {
+              swipeDown();
+            } else {
+              resetPosition();
+            }
+          } else {
+            // Swipe up - go to next card
+            if (currentIndex < articles.length - 1) {
+              swipeUp();
+            } else {
+              resetPosition();
+            }
+          }
         } else {
-          // Return to center
           resetPosition();
         }
+
+        setIsSwipingBack(false);
       },
     })
   ).current;
 
   const swipeUp = () => {
-    if (currentIndex < articles.length - 1) {
-      Animated.parallel([
-        Animated.timing(position, {
-          toValue: { x: 0, y: -screenHeight },
-          duration: 300,
-          useNativeDriver: false,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-      ]).start(() => {
-        setCurrentIndex(currentIndex + 1);
-        position.setValue({ x: 0, y: screenHeight });
-        opacity.setValue(0);
-
-        // Add subtle vibration feedback
-        Vibration.vibrate(50);
-
-        Animated.parallel([
-          Animated.timing(position, {
-            toValue: { x: 0, y: 0 },
-            duration: 300,
-            useNativeDriver: false,
-          }),
-          Animated.timing(opacity, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: false,
-          }),
-        ]).start();
-
-        onSwipeUp && onSwipeUp();
-      });
-    } else {
-      resetPosition();
-    }
+    Animated.parallel([
+      Animated.timing(position, {
+        toValue: { x: 0, y: -screenHeight },
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setCurrentIndex((prev) => prev + 1);
+      position.setValue({ x: 0, y: 0 });
+      opacity.setValue(1);
+      Vibration.vibrate(30);
+      onSwipeUp && onSwipeUp();
+    });
   };
 
   const swipeDown = () => {
-    if (currentIndex > 0) {
-      Animated.parallel([
-        Animated.timing(position, {
-          toValue: { x: 0, y: screenHeight },
-          duration: 300,
-          useNativeDriver: false,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-      ]).start(() => {
-        setCurrentIndex(currentIndex - 1);
-        position.setValue({ x: 0, y: -screenHeight });
-        opacity.setValue(0);
-
-        // Add subtle vibration feedback
-        Vibration.vibrate(50);
-
-        Animated.parallel([
-          Animated.timing(position, {
-            toValue: { x: 0, y: 0 },
-            duration: 300,
-            useNativeDriver: false,
-          }),
-          Animated.timing(opacity, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: false,
-          }),
-        ]).start();
-
-        onSwipeDown && onSwipeDown();
-      });
-    } else {
-      resetPosition();
-    }
+    Animated.parallel([
+      Animated.timing(position, {
+        toValue: { x: 0, y: screenHeight },
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(previousCardPosition, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setCurrentIndex((prev) => prev - 1);
+      position.setValue({ x: 0, y: 0 });
+      opacity.setValue(1);
+      previousCardPosition.setValue(-screenHeight);
+      Vibration.vibrate(30);
+      onSwipeDown && onSwipeDown();
+    });
   };
 
   const resetPosition = () => {
     Animated.parallel([
       Animated.spring(position, {
         toValue: { x: 0, y: 0 },
-        useNativeDriver: false,
+        useNativeDriver: true,
       }),
       Animated.timing(opacity, {
         toValue: 1,
         duration: 200,
-        useNativeDriver: false,
+        useNativeDriver: true,
       }),
-    ]).start();
+      Animated.timing(previousCardPosition, {
+        toValue: -screenHeight,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsSwipingBack(false);
+    });
   };
 
   if (articles.length === 0) {
@@ -174,47 +175,81 @@ const SwipableCardContainer = ({ articles, navigation, onSwipeUp, onSwipeDown })
       <View style={styles.container}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No articles available</Text>
-          <Text style={styles.emptySubtext}>Try selecting a different category</Text>
+          <Text style={styles.emptySubtext}>
+            Try selecting a different category
+          </Text>
         </View>
       </View>
     );
   }
 
-  const currentArticle = articles[currentIndex];
-
   return (
     <View style={styles.container}>
+
+      {/* Previous card */}
+      {currentIndex > 0 && (
+        <Animated.View
+          style={[
+            styles.cardContainer,
+            {
+              transform: [{ translateY: previousCardPosition }],
+              zIndex: isSwipingBack ? 3 : 1,
+            },
+          ]}
+        >
+          <NewsCard
+            article={articles[currentIndex - 1]}
+            onPress={() =>
+              navigation.navigate('ArticleDetail', { article: articles[currentIndex - 1] })
+            }
+            isSwipable={true}
+          />
+        </Animated.View>
+      )}
+
+      {/* Current card */}
       <Animated.View
         style={[
           styles.cardContainer,
           {
             transform: position.getTranslateTransform(),
             opacity: opacity,
+            zIndex: 2,
           },
         ]}
         {...panResponder.panHandlers}
       >
         <NewsCard
-          article={currentArticle}
-          onPress={() => navigation.navigate('ArticleDetail', { article: currentArticle })}
+          article={articles[currentIndex]}
+          onPress={() =>
+            navigation.navigate('ArticleDetail', { article: articles[currentIndex] })
+          }
           isSwipable={true}
         />
       </Animated.View>
 
-      {/* Article counter and progress */}
-      <View style={styles.counterContainer}>
-        <Text style={styles.counterText}>
-          {currentIndex + 1} of {articles.length}
-        </Text>
-        <View style={styles.progressBar}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${((currentIndex + 1) / articles.length) * 100}%` }
-            ]}
+      {/* Next card */}
+      {currentIndex < articles.length - 1 && (
+        <Animated.View
+          style={[
+            styles.cardContainer,
+            {
+              transform: [{ translateY: screenHeight }],
+              zIndex: 0,
+            },
+          ]}
+        >
+          <NewsCard
+            article={articles[currentIndex + 1]}
+            onPress={() =>
+              navigation.navigate('ArticleDetail', { article: articles[currentIndex + 1] })
+            }
+            isSwipable={true}
           />
-        </View>
-      </View>
+        </Animated.View>
+      )}
+
+     
 
       {/* Swipe indicator */}
       <SwipeIndicator visible={showIndicator && currentIndex === 0} />
@@ -225,15 +260,35 @@ const SwipableCardContainer = ({ articles, navigation, onSwipeUp, onSwipeDown })
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background.primary,
+  },
+  progressContainer: {
+    position: 'absolute',
+    top: 50,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a', // Ground News dark background
+    zIndex: 1000,
+    gap: 4,
+    paddingHorizontal: 20,
+  },
+  progressDot: {
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    flex: 1,
+    maxWidth: 30,
   },
   cardContainer: {
     width: screenWidth,
     height: CARD_HEIGHT,
     justifyContent: 'center',
     paddingHorizontal: 10,
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -243,22 +298,21 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#D0D0D0', // Light text for dark theme
+    color: '#D0D0D0',
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#B0B0B0', // Lighter gray for subtext
+    color: '#B0B0B0',
   },
   counterContainer: {
     position: 'absolute',
-    top: 20,
+    bottom: 100,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 15,
-    minWidth: 80,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
     alignItems: 'center',
   },
   counterText: {
@@ -266,18 +320,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     marginBottom: 4,
-  },
-  progressBar: {
-    width: 60,
-    height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 1,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: 'white',
-    borderRadius: 1,
   },
 });
 

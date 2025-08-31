@@ -109,10 +109,26 @@ const createSummary = (text, maxLength = 150) => {
   return summary;
 };
 
+// Function to generate a safe ID from URL or create a unique one
+const generateSafeId = (originalId, index) => {
+  if (!originalId) return `article-${index}`;
+
+  // If it's a URL, extract a safe identifier
+  try {
+    const url = new URL(originalId);
+    const pathname = url.pathname.replace(/[^a-zA-Z0-9]/g, '-');
+    const hostname = url.hostname.replace(/[^a-zA-Z0-9]/g, '-');
+    return `${hostname}${pathname}-${index}`.substring(0, 50); // Limit length
+  } catch {
+    // If not a URL, sanitize the string
+    return originalId.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 50) + `-${index}`;
+  }
+};
+
 // Convert JSON data to app format
 export const convertJsonToAppFormat = () => {
-  return mockDataJson.map((item, index) => ({
-    id: item.id || `article-${index}`,
+  const articles = mockDataJson.map((item, index) => ({
+    id: generateSafeId(item.id, index),
     title: item.title || 'Untitled Article',
     summary: createSummary(item.text),
     category: extractCategory(item.text || '', item.title || ''),
@@ -127,6 +143,26 @@ export const convertJsonToAppFormat = () => {
     image: item.image,
     originalText: item.text
   }));
+
+  // Ensure all IDs are unique by adding a suffix if needed
+  const seenIds = new Set();
+  const finalArticles = articles.map((article, index) => {
+    let uniqueId = article.id;
+    let counter = 1;
+
+    while (seenIds.has(uniqueId)) {
+      uniqueId = `${article.id}-${counter}`;
+      counter++;
+    }
+
+    seenIds.add(uniqueId);
+    return { ...article, id: uniqueId };
+  });
+
+  // Log the first few IDs for debugging
+  console.log('Generated article IDs:', finalArticles.slice(0, 3).map(a => a.id));
+
+  return finalArticles;
 };
 
 // Get all unique categories
