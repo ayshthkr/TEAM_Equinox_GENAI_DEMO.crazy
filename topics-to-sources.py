@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from pymongo import MongoClient
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
-
+import json
 import ast
 import pandas as pd
 import numpy as np
@@ -16,12 +16,13 @@ from pprint import pprint
 import pandas as pd
 import google.generativeai as genai
 import time
+import re
 import itertools
 #gemini cycle
 GEMINI_KEYS = [
     "xxx",
     "xxx",
-    "xxx"
+    
 ]
 # Create an infinite cycle iterator over API keys
 key_cycle = itertools.cycle(GEMINI_KEYS)
@@ -171,107 +172,111 @@ def cluster_content():
     )
     return cluster_docs_by_similarity_df
 
-def process_and_merge_headlines(cluster_groups, save_prefix="cluster_search_terms"):
-    """
-    Generates raw headlines per cluster, then merges and deduplicates them.
-    
-    Args:
-        cluster_groups (pd.DataFrame): DataFrame with columns ['cluster_id', 'content']
-        save_prefix (str): prefix for CSV files
-    
-    Returns:
-        pd.DataFrame: final merged headlines per cluster
-    """
-    search_terms = []
 
-    # --- Stage 1: Generate Raw Headlines ---
-    for _, row in cluster_groups.iterrows():
-        set_next_key()  # rotate key for LLM
+def _safe_json_loads(s):
+    """Safely parse JSON, fallback to wrapping as list of strings."""
+    try:
+        parsed = json.loads(s)
+        if isinstance(parsed, list):
+            return [str(x).strip() for x in parsed if x and isinstance(x, str)]
+        return [str(parsed).strip()]
+    except:
+        return [s.strip()]
 
-        cluster_id = row["cluster_id"]
-        combined_content = row["content"]
+def _clean_json_block(text):
+    """Remove Markdown fences like ```json ... ``` if present."""
+    return re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.MULTILINE).strip()
 
-        prompt = f"""
+def _generate_headlines_for_cluster(content, retries=3):
+    prompt = f"""
 You are a search query/headline generator.
 
 Task:
-- Receive multiple article snippets grouped into the same cluster.
-- If coherent, generate 1 concise headline summarizing the cluster.
-- If mixed topics, generate multiple  headlines.
-- If content is empty, return null (no dialogue).
-- must be coherent not just a single word
-- Headlines should be concise, keyword-rich, not full sentences.
+- Input: multiple article snippets from one cluster.
+- Output: A JSON list of 1–3 concise, meaningful headlines (strings only).
+- Each headline should be short, keyword-rich, and specific (not generic keywords).
+- No dicts, no metadata, no explanations — only plain strings in a JSON list.
+- If content empty → [].
 
 Content:
-{combined_content}
+{content}
+"""
+    for _ in range(retries):
+        try:
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
+            response = model.generate_content(prompt)
+            clean = _clean_json_block(response.text)
+            parsed = _safe_json_loads(clean)
+            return parsed
+        except Exception as e:
+            print(f"⚠️ Error: {e}, rotating key...")
+            set_next_key()
+            time.sleep(5)
+    return []
 
-Return ONLY a comma-separated list of headlines. Nothing else.
-        """
-
-        retries = 3
-        for attempt in range(retries):
-            try:
-                model = genai.GenerativeModel("gemini-2.5-pro")
-                response = model.generate_content(prompt)
-                terms = response.text.strip()
-                break
-            except Exception as e:
-                print(f"⚠️ Error with key: {e}, rotating key...")
-                set_next_key()
-                terms = f"ERROR: {e}"
-                time.sleep(15)
-        time.sleep(2)        
-             
-
-        print(f"Cluster {cluster_id} → {terms}")
-        search_terms.append({"cluster_id": cluster_id, "search_terms": terms})
-
-    # Save raw headlines
-    df_search = pd.DataFrame(search_terms)
-    raw_csv = f"{save_prefix}_raw.csv"
-    df_search.to_csv(raw_csv, index=False)
-    print(f"✅ Saved raw headlines to {raw_csv}")
-
-    # --- Stage 2: Merge & Refine Headlines ---
-    all_headlines = ", ".join(df_search["search_terms"].dropna().tolist())
-
+def _deduplicate_and_merge(headlines, retries=3):
+    """Deduplicate and merge headlines across clusters."""
+    if not headlines:
+        return []
+    
+    unique_headlines = sorted(set(h.strip() for h in headlines if h and isinstance(h, str)))
+    
     merge_prompt = f"""
 You are a headline deduplication and merging assistant.
 
 Task:
-- Receive candidate search headlines from multiple clusters.
-- Merge overlapping/redundant headlines into single detailed headlines.
-- Keep diverse topics separate.
-- Return keyword-rich, comma-separated headlines ONLY.
+- Input: candidate headlines.
+- Merge overlapping/redundant ones into clearer, specific headlines.
+- Keep distinct topics separate.
+- Output: A JSON list of plain strings (headlines only).
+- No dicts, no metadata, no explanations — just headlines.
 
 Headlines:
-{all_headlines}
-    """
-
-    retries = 3
-    for attempt in range(retries):
+{json.dumps(unique_headlines, ensure_ascii=False)}
+"""
+    for _ in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.5-pro")
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
             response = model.generate_content(merge_prompt)
-            final_headlines = response.text.strip()
-            break
+            clean = _clean_json_block(response.text)
+            parsed = _safe_json_loads(clean)
+            return parsed
         except Exception as e:
-            print(f"⚠️ Error in merge step: {e}, rotating key...")
+            print(f"⚠️ Merge error: {e}, rotating key...")
             set_next_key()
-            final_headlines = f"ERROR: {e}"
-            time.sleep(15)
+            time.sleep(5)
+    return unique_headlines
+
+def process_and_merge_headlines(cluster_groups, save_prefix="cluster_search_terms"):
+    search_terms = []
+    
+    # Stage 1 → generate raw headlines
+    for _, row in cluster_groups.iterrows():
+        headlines = _generate_headlines_for_cluster(row["content"])
+        print(f"Cluster {row['cluster_id']} → {headlines}")
+        search_terms.append({"cluster_id": row["cluster_id"], 
+                             "search_terms": json.dumps(headlines, ensure_ascii=False)})
         time.sleep(2)
 
-    print("🔗 Final Merged Headlines:")
-    print(final_headlines)
+    df_search = pd.DataFrame(search_terms)
+    df_search.to_csv(f"{save_prefix}_raw.csv", index=False)
+    print(f"✅ Saved raw headlines to {save_prefix}_raw.csv")
 
-    # Save merged results
-    df_final = pd.DataFrame([{"final_headlines": final_headlines}])
-    final_csv = f"{save_prefix}_final.csv"
-    df_final.to_csv(final_csv, index=False)
-    print(f"✅ Saved merged search terms to {final_csv}")
+    # Stage 2 → merge across clusters
+    all_headlines = []
+    for val in df_search["search_terms"].dropna():
+        parsed = json.loads(val) if isinstance(val, str) else val
+        all_headlines.extend(parsed if isinstance(parsed, list) else [str(parsed)])
 
-    return df_search, df_final    
+    merged = _deduplicate_and_merge(all_headlines)
+    print("🔗 Final Merged Headlines:", merged)
+
+    df_final = pd.DataFrame([{"final_headlines": json.dumps(merged, ensure_ascii=False)}])
+    df_final.to_csv(f"{save_prefix}_final.csv", index=False)
+    print(f"✅ Saved merged search terms to {save_prefix}_final.csv")
+
+    return df_search, df_final
+
 
 
 from exa_py import Exa
@@ -331,14 +336,16 @@ def fetch_and_save_exa(headlines,
                 num_results=limit
             )
             serialized = serialize(result)
-            pprint.pprint(serialized)
+            # pprint.pprint(serialized)
 
             # Save to constant MongoDB collection
-            collection.insert_one({
+            a= collection.insert_one({
                 "headline": head,
-                "results": result,
+                "results": serialized,
                 "fetched_at": datetime.utcnow()
             })
+            # print(a)
+            # print(f"Inserted document ID: {a.inserted_id}")
             print(f"✅ Saved results to MongoDB collection: {collection_name}\n")
 
         except Exception as e:
@@ -350,7 +357,7 @@ def pipeline_process(
     scraped_collection="scraped_articles",
     exa_collection="exa_headlines",
     hours=24,
-    similarity_threshold=0.7,
+    similarity_threshold=0.8,
     headline_limit=5,
     top_news=100
 ):
@@ -405,7 +412,12 @@ def pipeline_process(
     df_search, df_final = process_and_merge_headlines(cluster_groups)
 
     # --- 5. Fetch Exa content for top headlines ---
-    final_headlines_list = [h.strip() for h in df_final["final_headlines"].iloc[0].split(",") if h.strip()][:top_news]
+   
+    final_headlines_str = df_final["final_headlines"].iloc[0]
+    print(final_headlines_str)
+    final_headlines_list = json.loads(final_headlines_str)[:top_news]
+    print(final_headlines_list)
+
     
     # Fetch & save to MongoDB
     print("🔍 Fetching Exa content for top headlines...")

@@ -181,7 +181,10 @@ import datetime
 import json
 
 exa = Exa(api_key="037d0186-123a-47a2-b1ff-81a9135a29ee")
-
+from pymongo import MongoClient
+mongo_uri="xxx"
+db_name="mydb"
+collection_name="exa_headlines"
 def fetch_exa_content(query):
     try:
         now = datetime.datetime.utcnow()
@@ -200,6 +203,16 @@ def fetch_exa_content(query):
             context=True,
             num_results = 5
         )
+        client = MongoClient(mongo_uri)
+        db = client[db_name]
+        collection = db[collection_name]
+        collection.insert_one({
+                "headline": head,
+                "results": result,
+               
+            })
+        print(collection_name)
+        client.close()
         def serialize(obj):
             if isinstance(obj, list):
                 return [serialize(i) for i in obj]
@@ -207,7 +220,7 @@ def fetch_exa_content(query):
                 return {k: serialize(v) for k, v in obj.__dict__.items()}
             else:
                 return obj
-
+   
         return serialize(result)
     except Exception as e:
         return f"Error fetching content: {e}"
@@ -216,11 +229,11 @@ def fetch_exa_content(query):
 import pprint  # for pretty printing
 
 
-headlines=[h.strip() for h in final_headlines.split(",") if h.strip()][2:3]
+headlines=[h.strip() for h in final_headlines.split(",") if h.strip()][:30]
 for head in headlines:
     print(head)
     response_obj = fetch_exa_content(head)
-    pprint.pprint(response_obj)
+    # pprint.pprint(response_obj)
 
     # Save as JSON
     with open("exa_response.json", "w", encoding="utf-8") as f:
