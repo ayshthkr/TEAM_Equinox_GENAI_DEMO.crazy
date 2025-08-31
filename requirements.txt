@@ -1,5 +1,21 @@
+# Core utilities
+numpy
+pandas
+scikit-learn
+pymongo
+
+# API + Web
 fastapi
 uvicorn
 requests
 beautifulsoup4
 lxml
+
+# Google GenAI (Gemini)
+google-generativeai
+
+# Exa API
+exa-py
+
+# Optional (pretty-printing)
+pprintpp
