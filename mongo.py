@@ -9,6 +9,17 @@ import google.generativeai as genai
 # ======================
 # Gemini API setup
 # ======================
+
+MAX_CHARS = 30000  # keep under limit
+
+def clean_text(text: str) -> str:
+    # Remove extra whitespace
+    text = " ".join(text.split())
+    # Truncate safely
+    if len(text) > MAX_CHARS:
+        text = text[:MAX_CHARS]
+    return text
+
 GEMINI_KEYS = [
     "xxx",
     "xxx",
@@ -71,6 +82,7 @@ def save_csvs_to_mongo(
             now = datetime.now(timezone.utc).isoformat()
 
             # Generate embedding for content
+            content = clean_text(content)
             embedding = get_embedding(content)
 
             ops2.append({"url": url, "content": content, "source": source, "insertedAt": now, "embedding": embedding})
