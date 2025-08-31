@@ -10,8 +10,13 @@ import google.generativeai as genai
 # Gemini API setup
 # ======================
 GEMINI_KEYS = [
-   "xxx",
     "xxx",
+    "xxx",
+  "xxx",
+    "xxx",
+    "xxx"
+
+    
 ]
 key_cycle = itertools.cycle(GEMINI_KEYS)
 
