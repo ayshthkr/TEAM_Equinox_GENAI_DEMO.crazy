@@ -400,8 +400,13 @@ def pipeline_process(
     print("🔍 Clustering documents...")
     clusters = cluster_docs_by_similarity_df(df_docs, threshold=similarity_threshold)
 
-    # Sort clusters by size (number of docs) and pick top 20
-    clusters_sorted = sorted(clusters, key=lambda x: len(x["docs"]), reverse=True)[:20]
+    # Sort clusters by size (number of docs) - largest first, pick top 20
+    clusters_sorted_top = sorted(clusters, key=lambda x: len(x["docs"]), reverse=True)[:20]
+    # Sort clusters by size (number of docs) - smallest first, pick bottom 10
+    clusters_sorted_bottom = sorted(clusters, key=lambda x: len(x["docs"]))[:10]
+    # Combine both lists
+    clusters_sorted = clusters_sorted_top + clusters_sorted_bottom
+   
 
     # Prepare DataFrame for headline generation
     cluster_groups = pd.DataFrame([
@@ -437,4 +442,4 @@ def pipeline_process(
     client.close()
     return df_search, df_final
 
-pipeline_process()
+# pipeline_process()

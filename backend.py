@@ -7,6 +7,7 @@ from toi_utils import scrape_and_export
 from thehindustan import scrape_and_export_hindustan_times
 from thehindu_utils import scrape_hindu_news
 from thedailyjagran_utils import scrape_jagran
+from topics_to_sources import pipeline_process
 
 app = FastAPI(
     title="News Scraper API",
@@ -109,6 +110,14 @@ def scrape_all(background_tasks: BackgroundTasks):
         "status": "processing"
     }
 
+@app.get("/process/topics", tags=["Processing"], summary="Process topics to sources")
+def process_topics():
+    """
+    Processes topics and maps them to their respective sources.
+    """
+    thread = threading.Thread(target=pipeline_process)
+    thread.start()
+    return {"message": "Topic processing started in background."}
 
 if __name__ == "__main__":
     uvicorn.run("backend:app", host="0.0.0.0", port=8000, reload=True)
