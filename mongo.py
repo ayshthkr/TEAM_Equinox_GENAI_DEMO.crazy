@@ -12,6 +12,7 @@ import google.generativeai as genai
 
 MAX_CHARS = 30000  # keep under limit
 
+# Clean and truncate text
 def clean_text(text: str) -> str:
     # Remove extra whitespace
     text = " ".join(text.split())
