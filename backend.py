@@ -1,6 +1,8 @@
+from http.client import HTTPException
 from typing import List, Dict, Any
-from fastapi import FastAPI
+from fastapi import Body, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import uvicorn
 
 from toi_utils import scrape_and_export
@@ -118,6 +120,81 @@ def process_topics():
     thread = threading.Thread(target=pipeline_process)
     thread.start()
     return {"message": "Topic processing started in background."}
+
+
+
+from typing import Optional, List
+from bson import ObjectId
+from pymongo import MongoClient, UpdateOne
+
+# ---- Pydantic Models ---- #
+class ArticleFilter(BaseModel):
+    tags: Optional[List[str]] = None
+    limit: Optional[int] = 20
+    skip: Optional[int] = 0
+
+
+# ---- MongoDB Helper ---- #
+def get_collection(
+    mongo_uri="xxx",
+    db_name="mydb",
+    collection_name="exa_headlines",
+):
+    client = MongoClient(mongo_uri)
+    db = client[db_name]
+    return db[collection_name]
+
+
+# ------------------ New Routes ------------------ #
+@app.post("/articles", tags=["Articles"], summary="Get all or filtered articles")
+def get_articles(filters: ArticleFilter = Body(default=ArticleFilter())):
+    """
+    Fetches articles from the `exa_headlines` collection.
+
+    - If no filters → returns all articles (default limit=20).  
+    - You can filter by:
+        - `tags`: list of tags  
+        - `limit`: max number of articles  
+        - `skip`: offset for pagination  
+    """
+    collection = get_collection()
+    query = {}
+
+    if filters.tags:
+        query["tag"] = {"$in": filters.tags}
+
+    cursor = collection.find(query).skip(filters.skip).limit(filters.limit)
+    results = []
+    for doc in cursor:
+        doc["_id"] = str(doc["_id"])  # convert ObjectId → str
+        results.append(doc)
+
+    return {"count": len(results), "articles": results}
+
+
+@app.get("/articles/{article_id}", tags=["Articles"], summary="Get article by ID")
+def get_article_by_id(article_id: str):
+    """
+    Fetch a single article by its MongoDB `_id`.
+    """
+    collection = get_collection()
+    try:
+        doc = collection.find_one({"_id": ObjectId(article_id)})
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid article ID format")
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    doc["_id"] = str(doc["_id"])
+    return doc
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     uvicorn.run("backend:app", host="0.0.0.0", port=8000, reload=True)
