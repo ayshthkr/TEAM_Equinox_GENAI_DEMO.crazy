@@ -4,11 +4,16 @@ from fastapi import Body, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+import logging
 
 from toi_utils import scrape_and_export
 from thehindustan import scrape_and_export_hindustan_times
 from thehindu_utils import scrape_hindu_news
 from thedailyjagran_utils import scrape_jagran
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 from topics_to_sources import pipeline_process
 
 app = FastAPI(
@@ -177,9 +182,13 @@ def get_articles(filters: ArticleFilter = Body(default=ArticleFilter())):
     """
     collection = get_collection()
     query = {}
+    logging.info(f"Filters received: {filters}")
+
+    print(filters)
 
     if filters.tags:
         query["tag"] = {"$in": filters.tags}
+        print(query['tag'])
 
     cursor = collection.find(query).skip(filters.skip).limit(filters.limit)
     results = []
