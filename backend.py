@@ -156,6 +156,24 @@ def get_articles(filters: ArticleFilter = Body(default=ArticleFilter())):
         - `tags`: list of tags  
         - `limit`: max number of articles  
         - `skip`: offset for pagination  
+
+    Sample usage:
+
+    Request:
+        POST /articles
+        Content-Type: application/json
+        {
+            "tags": ["sports", "politics"],
+            "limit": 10,
+            "skip": 0
+        }
+
+
+    Response:
+        {
+            "count": 10,
+            "articles": [ ... ]
+        }
     """
     collection = get_collection()
     query = {}
