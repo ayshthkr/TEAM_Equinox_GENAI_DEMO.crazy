@@ -285,7 +285,7 @@ You are a topic tag generator.
 
 Task:
 - Input: news article text.
-- Output: a JSON array of 3–5 concise tags (strings only).
+- Output: a JSON array of 3–5 concise tags (strings only) of states, news tags, and topics of interest.
 - No dicts, no explanations, just a JSON list.
 - If content empty → [].
 
