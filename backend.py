@@ -138,6 +138,10 @@ class ArticleFilter(BaseModel):
     limit: Optional[int] = 20
     skip: Optional[int] = 0
 
+class SearchQuery(BaseModel):
+    query:str
+
+
 
 # ---- MongoDB Helper ---- #
 def get_collection(
@@ -190,11 +194,31 @@ def get_articles(filters: ArticleFilter = Body(default=ArticleFilter())):
         query["tag"] = {"$in": filters.tags}
         print(query['tag'])
 
-    cursor = collection.find(query).skip(filters.skip).limit(filters.limit)
-    results = []
-    for doc in cursor:
-        doc["_id"] = str(doc["_id"])  # convert ObjectId → str
-        results.append(doc)
+    pipeline = [
+        {"$match": query},
+        {
+            "$addFields": {
+                "url_count": {"$size": {"$ifNull": ["$urls", []]}}
+            }
+        },
+        {
+            "$sort": {
+                "fetched_at": -1,   # primary sort (latest first)
+                "url_count": -1     # secondary sort (more URLs first)
+            }
+        },
+        {"$skip": filters.skip or 0},
+        {"$limit": filters.limit or 20}
+    ]
+
+    results = list(collection.aggregate(pipeline))
+
+    results = list(collection.aggregate(pipeline))
+
+# Convert ObjectId to str for JSON serialization
+    for doc in results:
+        if "_id" in doc:
+            doc["_id"] = str(doc["_id"])
 
     return {"count": len(results), "articles": results}
 
@@ -215,6 +239,46 @@ def get_article_by_id(article_id: str):
 
     doc["_id"] = str(doc["_id"])
     return doc
+
+
+@app.post("/article/search",tags=["Articles"],
+          summary="search articles by text occurence in headline,search terms")
+def search(search:SearchQuery=Body(...)):
+    '''
+      Search articles in the collection by `headline`, `searchterms`, or `content`.
+    '''
+
+    collection=get_collection()
+
+    regex = {"$regex": search.query, "$options": "i"}
+    query = {
+        "$or": [
+            {"headline": regex},
+            {"searchterms": regex},
+            {"content": regex}
+        ]
+    }
+
+    pipeline=[
+         {"$match": query},
+         {
+             "$sort": {
+                "fetched_at": -1,   # primary sort (latest first)
+                "url_count": -1     # secondary sort (more URLs first)
+            }
+         }
+    ]
+
+    results=list(collection.aggregate(pipeline))
+
+    for doc in results:
+        if "_id" in doc:
+            doc["_id"]=str(doc["_id"])
+
+    return {"count": len(results), "articles": results}
+
+
+
 
 
 

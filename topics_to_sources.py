@@ -213,7 +213,7 @@ Content:
 """
     for _ in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash-lite")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
             clean = _clean_json_block(response.text)
             parsed = _safe_json_loads(clean)
@@ -265,7 +265,7 @@ Content:
 """
     for _ in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash-lite")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
             return response.text.strip().strip('"')
         except Exception as e:
@@ -281,20 +281,34 @@ def generate_tags(content: str, retries=3):
     Returns: list of strings
     """
     prompt = f"""
-You are a topic tag generator.
+You are a smart news tag generator.
 
 Task:
-- Input: news article text.
-- Output: a JSON array of 3–5 concise tags (strings only) of states, news tags, and topics of interest.
-- No dicts, no explanations, just a JSON list.
-- If content empty → [].
+- Input: a news article text.
+- Output: a JSON array of 5-8 concise tags.
+- Tags should include:
+    - General topics: politics, military, elections, economy, sports, entertainment, technology, etc.
+    - States, cities, or regions mentioned.
+    - Hot/trending topics mentioned in the content.
+- Output ONLY a JSON list of strings. No explanations or extra text.
+- If nothing relevant, return an empty list [].
 
 Content:
-{content}
+\"\"\"{content}\"\"\"
+- Output: a JSON array of 3–5 concise tags.
+- Tags should include:
+    - General topics: politics, military, elections, economy, sports, entertainment, technology, etc.
+    - States, cities, or regions mentioned.
+    - Hot/trending topics mentioned in the content.
+- Output ONLY a JSON list of strings. No explanations or extra text.
+- If nothing relevant, return an empty list [].
+
+Content:
+\"\"\"{content}\"\"\"
 """
     for _ in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash-lite")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
             clean = _clean_json_block(response.text)
             parsed = _safe_json_loads(clean)
@@ -323,19 +337,16 @@ Task:
 Read and analyze the provided articles.
 Extract the most important points (who, what, when, where, why, how).
 
-Create a single, cohesive summary that:
-Is 150–200 words 
+Create a single news article summary that:
+Is 2 minutes long enough to cover key points.
+is >200 words.
 Highlights agreements or differences across sources.
 Avoids unnecessary details, speculation, or bias.
 Write in a clear, neutral, professional news style.
 
 Format:
-Return the summary as one continuous block of text, with no bullet points or lists.
+Return the summary with no bullet points or lists.
 
-Example Summaries:
-Multiple countries are ramping up renewable energy investments as heatwaves intensify, with governments pushing for faster adoption of solar and wind to curb climate impacts. While some industries warn of short-term costs, scientists emphasize urgent action as extreme weather events multiply.
-
-A breakthrough in gene therapy has restored partial vision for thousands of patients suffering from inherited blindness. Clinical trials show promising results, though experts caution that accessibility and affordability remain challenges before large-scale rollout.
 
 Tone:
 Neutral, clear, and informative. Engaging enough for general readers but always fact-based and trustworthy.
@@ -348,7 +359,7 @@ Here are the articles’ content:
 
     for _ in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash-lite")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
             return response.text.strip().strip('"')
         except Exception as e:
@@ -447,6 +458,7 @@ def serialize(obj):
         else:
             return obj
 
+testrows=[]
 def fetch_and_save_exa(headlines, 
                        mongo_uri="xxx",
                        db_name="mydb",
@@ -515,6 +527,18 @@ def fetch_and_save_exa(headlines,
             bias_right = r / total
             bias_left = l / total
             bias_center = c / total
+
+            inserttocsv={
+                "content": objectified["content"],
+                "summary": summary,
+                "headline": headline,
+                "tag": tags,
+                "embedding": get_embedding(objectified["content"]),
+
+            }
+            testrows.append(inserttocsv)
+            
+            
 
             a = collection.insert_one({
                 "searchterms": headlines,
@@ -594,7 +618,7 @@ def pipeline_process(
     clusters = cluster_docs_by_similarity_df(df_docs, threshold=similarity_threshold)
 
     # Sort clusters by size (number of docs) - largest first, pick top 20
-    clusters_sorted_top = sorted(clusters, key=lambda x: len(x["docs"]), reverse=True)[:30]
+    clusters_sorted_top = sorted(clusters, key=lambda x: len(x["docs"]), reverse=True)[:40]
     # Sort clusters by size (number of docs) - smallest first, pick bottom 10
     clusters_sorted_bottom = sorted(clusters, key=lambda x: len(x["docs"]))[:10]
     # Combine both lists
@@ -620,14 +644,16 @@ def pipeline_process(
 
    
   
-    
+    df_test=pd.DataFrame(testrows)
+    df_test.to_csv("testrows.csv", index=False)
+    print("INSERTED TO CSV")
     # Fetch & save to MongoDB
-    if rows:
-        df_final = pd.DataFrame(rows)
-        df_final.to_csv("final_exa_rows.csv", index=False)
-        print("✅ Saved final_exa_rows.csv, starting pushing to scrapped articles........")
-        thread = threading.Thread(target=do_scraping_and_save)
-        thread.start()
+    # if rows:
+    #     df_final = pd.DataFrame(rows)
+    #     df_final.to_csv("final_exa_rows.csv", index=False)
+    #     print("✅ Saved final_exa_rows.csv, starting pushing to scrapped articles........")
+    #     thread = threading.Thread(target=do_scraping_and_save)
+    #     thread.start()
 
         
     
