@@ -1,103 +1,122 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import CategoryBar from "@/components/CategoryBar";
+import FeaturedNews from "@/components/FeaturedNews";
+import NewsCard from "@/components/NewsCard";
+import MarketDashboard from "@/components/MarketDashboard";
+import { fetchArticles } from "@/lib/api";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+export default function HomePage() {
+  const [featured, setFeatured] = useState(null);
+  const [articles, setArticles] = useState([]);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const PAGE_SIZE = 12;
+  const fallback = "/placeholder.jpg"; 
+
+  async function loadArticles(reset = false) {
+    try {
+      setLoading(true);
+      const skip = reset ? 0 : page * PAGE_SIZE;
+      const data = await fetchArticles({ limit: PAGE_SIZE + 1, skip });
+
+      if (data?.articles?.length > 0) {
+        if (reset) {
+          setFeatured(data.articles[0]);
+          setArticles(data.articles.slice(1));
+          setPage(1);
+        } else {
+          setArticles((prev) => {
+            const newOnes = data.articles.filter(
+              (a) => !prev.some((p) => p._id === a._id)
+            );
+            return [...prev, ...newOnes];
+          });
+          setPage((prev) => prev + 1);
+        }
+        setHasMore(data.articles.length >= PAGE_SIZE);
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error("Failed to fetch articles:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadArticles(true);
+  }, []);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex flex-col lg:flex-row gap-6 px-4 sm:px-6 lg:px-8">
+      {/* Left content */}
+      <div className="flex-1">
+        <CategoryBar />
+        <h1 className="text-2xl sm:text-3xl font-bold mt-2 mb-5">
+          Daily Briefing
+        </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Featured News */}
+        <div className="mb-8">
+          {featured ? (
+            <FeaturedNews article={featured} />
+          ) : (
+            <p className="text-gray-500">Loading featured news...</p>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Grid of NewsCards */}
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {articles.map((a, i) => (
+            <NewsCard
+              key={a._id || i}
+              news={{
+                id: a._id,
+                title: a.headline,
+                url: a.url || `${API_BASE}/article/${a._id}`,
+                image: a.imgs?.[0] || fallback,
+                sources: a.sources || 0,
+                bias:
+                  a.bias_left || a.bias_center || a.bias_right
+                    ? {
+                        left: Math.round((a.bias_left || 0) * 100),
+                        center: Math.round((a.bias_center || 0) * 100),
+                        right: Math.round((a.bias_right || 0) * 100),
+                      }
+                    : null,
+              }}
+              className={i === 2 ? "lg:col-span-2 lg:row-span-2" : ""}
+            />
+          ))}
+        </div>
+
+        {/* Load More Button */}
+        {hasMore && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => loadArticles()}
+              disabled={loading}
+              className="px-6 py-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow hover:shadow-md disabled:opacity-50"
+            >
+              {loading ? "Loading..." : "Load More"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Right side: Market Dashboard */}
+      {featured && !loading && (
+        <aside className="hidden lg:block w-full lg:w-[430px] lg:sticky lg:top-20 lg:h-[calc(100vh-7rem)]">
+          <MarketDashboard />
+        </aside>
+      )}
     </div>
   );
 }
