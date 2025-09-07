@@ -26,7 +26,7 @@ export default function SearchPageContent() {
         const res = await fetch(`${API_BASE}/article/search`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query }), 
+          body: JSON.stringify({ query }),
         });
 
         if (!res.ok) {
@@ -35,7 +35,12 @@ export default function SearchPageContent() {
         }
 
         const data = await res.json();
-        const list = Array.isArray(data) ? data : [];
+
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.articles)
+          ? data.articles
+          : [];
 
         if (!cancelled) setArticles(list);
       } catch (err) {
