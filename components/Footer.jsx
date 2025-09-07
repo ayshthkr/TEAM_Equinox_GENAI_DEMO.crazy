@@ -13,36 +13,20 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links (categories removed for now to avoid 404s) */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">
               Explore
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
-              <li>
-                <Link href="/world" className="text-text-secondary hover:text-accent">
-                  World
-                </Link>
-              </li>
-              <li>
-                <Link href="/business" className="text-text-secondary hover:text-accent">
-                  Business
-                </Link>
-              </li>
-              <li>
-                <Link href="/technology" className="text-text-secondary hover:text-accent">
-                  Technology
-                </Link>
-              </li>
-              <li>
-                <Link href="/sports" className="text-text-secondary hover:text-accent">
-                  Sports
-                </Link>
-              </li>
+              <li className="text-text-secondary">World</li>
+              <li className="text-text-secondary">Business</li>
+              <li className="text-text-secondary">Technology</li>
+              <li className="text-text-secondary">Sports</li>
             </ul>
           </div>
 
-          {/* Legal + Support */}
+          {/* Legal + Support (keep working links) */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">
               Support
@@ -70,7 +54,6 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="mt-10 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-center text-sm text-text-secondary">
           <p>© {new Date().getFullYear()} News Web App. All rights reserved.</p>
-          
         </div>
       </div>
     </footer>
