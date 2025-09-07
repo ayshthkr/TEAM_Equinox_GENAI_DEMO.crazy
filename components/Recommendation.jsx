@@ -3,7 +3,7 @@ import { fetchArticles } from "@/lib/api";
 import { useState,useEffect } from "react";
 export default function Recommendations({ currentId, tags }) {
   const [recs, setRecs] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); 
 
   const fallback = "/placeholder.jpg"; 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
