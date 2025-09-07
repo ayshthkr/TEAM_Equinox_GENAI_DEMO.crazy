@@ -26,13 +26,16 @@ export default function SearchPageContent() {
         const res = await fetch(`${API_BASE}/article/search`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query }),
+          body: JSON.stringify({ query }), // backend expects { query }
         });
 
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`API ${res.status}: ${errText}`);
+        }
+
         const data = await res.json();
-        const list = Array.isArray(data)
-          ? data
-          : data?.articles || data?.data || data?.results || [];
+        const list = Array.isArray(data) ? data : [];
 
         if (!cancelled) setArticles(list);
       } catch (err) {
@@ -65,14 +68,14 @@ export default function SearchPageContent() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {articles.map((a, i) => (
             <NewsCard
-              key={a._id || i}
+              key={a._id || a.id || i}
               news={{
-                id: a._id,
+                id: a._id || a.id,
                 title: a.headline || a.title || "Untitled",
                 url:
                   (a.urls && a.urls.length > 0 && a.urls[0]) ||
                   a.url ||
-                  `${API_BASE}/article/${a._id}`,
+                  `${API_BASE}/article/${a._id || a.id}`,
                 image:
                   (a.imgs && a.imgs.length > 0 && a.imgs[0]) ||
                   a.image ||

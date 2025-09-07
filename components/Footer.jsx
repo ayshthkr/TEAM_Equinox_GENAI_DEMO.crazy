@@ -26,7 +26,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Legal + Support (keep working links) */}
+          {/* Legal + Support */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">
               Support
@@ -42,11 +42,7 @@ export default function Footer() {
                   Privacy Policy
                 </Link>
               </li>
-              <li>
-                <Link href="/terms" className="text-text-secondary hover:text-accent">
-                  Terms of Service
-                </Link>
-              </li>
+              <li className="text-text-secondary">Terms of Service</li>
             </ul>
           </div>
         </div>
