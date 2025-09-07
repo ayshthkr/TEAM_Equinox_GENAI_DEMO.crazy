@@ -56,7 +56,8 @@ export default function SearchPage() {
       {/* Left content */}
       <div className="flex-1">
         <h1 className="text-2xl sm:text-3xl font-bold mb-5">
-          Search Results for "{query}"
+         <h1>{`Results for "${query}"`}</h1>
+
         </h1>
 
         {loading && <p className="text-gray-500">Loading...</p>}

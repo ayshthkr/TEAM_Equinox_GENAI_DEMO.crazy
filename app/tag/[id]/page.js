@@ -48,7 +48,7 @@ export default function TagPage() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold mb-6">News about "{tag}"</h1>
+      <h1 className="text-2xl font-bold mb-6">{`News about "${tag}"`}</h1>
       {articles.length === 0 ? (
         <p className="text-center text-gray-500">
           No articles found for this topic.
