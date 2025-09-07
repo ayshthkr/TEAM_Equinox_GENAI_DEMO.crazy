@@ -1,8 +1,134 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchArticleById } from "@/lib/api";
 import BiasBar from "@/components/BiasBar";
+import NewsSkeleton from "@/components/NewsSkeleton";
+import Recommendations from "@/components/Recommendation";
+import Link from "next/link";
+
+function ArticleSkeleton() {
+  return (
+    <div className=" mx-auto animate-pulse">
+      {/* Hero Skeleton */}
+      <div className="relative w-full h-[220px] sm:h-[280px] md:h-[380px] lg:h-[500px] rounded-xl overflow-hidden shadow-lg bg-blue-600/30" />
+
+      <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-10">
+        {/* Bias Skeleton */}
+        <div className="mb-6 sm:mb-8 md:mb-10">
+          <div className="h-5 w-48 bg-blue-600/30 rounded mb-3" />
+          <div className="h-6 w-full bg-blue-600/30 rounded" />
+        </div>
+
+        {/* Summary Skeleton */}
+        <div className="mb-8 sm:mb-10 md:mb-12">
+          <div className="h-6 w-40 bg-gray-300 rounded mb-4" />
+          <div className="bg-surface border border-border rounded-xl p-4 sm:p-6 md:p-8 shadow-sm">
+            <div className="h-4 w-3/4 bg-blue-600/30 rounded mb-3" />
+            <div className="h-4 w-5/6 bg-blue-600/30 rounded mb-3" />
+            <div className="h-4 w-2/3 bg-blue-600/30 rounded" />
+          </div>
+        </div>
+
+        {/* Sources Skeleton */}
+        
+      </div>
+    </div>
+  );
+}
+
+ function SourcesAndTags({ article }) {
+  const [open, setOpen] = useState(false);
+
+  const urls = article.urls || [];
+  const tags = article.tag || [];
+
+  // Helper to get hostname first letter
+  const getHostInitial = (url) => {
+    try {
+      return new URL(url).hostname.replace("www.", "")[0].toUpperCase();
+    } catch {
+      return "?";
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Sources */}
+      {urls.length > 0 && (
+        <div className="flex items-center relative">
+          {urls.slice(0, 3).map((url, idx) => (
+            <a
+              key={idx}
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className={`w-10 h-10 flex items-center justify-center rounded-full border border-border bg-surface text-sm font-semibold text-accent shadow hover:bg-accent hover:text-white transition ${
+                idx !== 0 ? "-ml-3" : ""
+              }`}
+              title={new URL(url).hostname.replace("www.", "")}
+            >
+              {getHostInitial(url)}
+            </a>
+          ))}
+
+          {urls.length > 3 && (
+            <div className="-ml-3 relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // prevent parent closing immediately
+                  setOpen(!open);
+                }}
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-border bg-surface text-sm font-semibold text-text-secondary shadow hover:bg-accent hover:text-white transition"
+              >
+                +{urls.length - 3}
+              </button>
+
+              {open && (
+                <div className="absolute top-12 left-0 bg-surface border border-border rounded-lg shadow-lg p-3 w-64 z-10">
+                  <h4 className="text-sm font-semibold text-text-secondary mb-2">
+                    More Sources
+                  </h4>
+                  <ul className="space-y-2 max-h-48 overflow-y-auto" >
+                    {urls.map((url, idx) => (
+                      <li key={idx}>
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block text-sm text-accent hover:underline truncate"
+                        >
+                          {new URL(url).hostname.replace("www.", "")}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tags (capsule style) */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag, idx) => (
+      
+            <Link
+              href={`/tag/${tag}`}
+              key={idx}
+              className="px-3 py-1 rounded-full border border-border bg-surface text-xs font-medium text-text-secondary hover:bg-accent hover:text-white transition"
+            >
+              {tag}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ArticlePage() {
   const { id } = useParams();
@@ -14,6 +140,7 @@ export default function ArticlePage() {
     async function load() {
       try {
         const data = await fetchArticleById(id);
+        console.log(data)
         setArticle(data);
       } catch (err) {
         console.error("Failed to fetch article:", err);
@@ -24,16 +151,12 @@ export default function ArticlePage() {
 
   if (!article) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-base md:text-lg text-text-secondary animate-pulse">
-          Loading article...
-        </p>
-      </div>
+         <ArticleSkeleton></ArticleSkeleton>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className=" mx-auto">
       {/* Hero Section */}
       <div className="relative w-full h-[220px] sm:h-[280px] md:h-[380px] lg:h-[500px] rounded-xl overflow-hidden shadow-lg">
         <img
@@ -48,6 +171,11 @@ export default function ArticlePage() {
           </h1>
         </div>
       </div>
+      
+
+      {/* sources in circle */}
+
+     
 
       <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-10">
         {/* Bias Bar */}
@@ -63,7 +191,7 @@ export default function ArticlePage() {
             }}
           />
         </div>
-
+        <SourcesAndTags article={article}></SourcesAndTags>
         {/* Summary */}
         <div className="mb-8 sm:mb-10 md:mb-12">
           <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-3 sm:mb-4">
@@ -76,32 +204,13 @@ export default function ArticlePage() {
           </div>
         </div>
 
-        {/* External Sources */}
-        {article.urls?.length > 0 && (
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-text-primary mb-4 sm:mb-6">
-              Read More from Trusted Sources
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {article.urls.map((link, i) => (
-                <a
-                  key={i}
-                  href={link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block bg-surface border border-border rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition hover:border-accent"
-                >
-                  <span className="text-accent font-medium text-base sm:text-lg">
-                    {new URL(link).hostname.replace("www.", "")}
-                  </span>
-                  <p className="text-xs sm:text-sm text-text-secondary truncate">
-                    {link}
-                  </p>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
+
+        <div className="">
+          <h1>recommendiation</h1>
+          <Recommendations currentId={article._id} tags={article.tag}/>
+        </div>
+
+        
       </div>
     </div>
   );

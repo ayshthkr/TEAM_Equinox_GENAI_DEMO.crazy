@@ -6,6 +6,8 @@ import FeaturedNews from "@/components/FeaturedNews";
 import NewsCard from "@/components/NewsCard";
 import MarketDashboard from "@/components/MarketDashboard";
 import { fetchArticles } from "@/lib/api";
+import NewsSkeleton from "@/components/NewsSkeleton";
+
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -17,8 +19,17 @@ export default function HomePage() {
   const [hasMore, setHasMore] = useState(true);
 
   const PAGE_SIZE = 12;
-  const fallback = "/placeholder.jpg"; 
-
+  const fallback = "/placeholder.jpg";
+function MarketSkeleton() {
+  return (
+    <div className="animate-pulse space-y-4">
+      <div className="rounded-lg bg-blue-200/20 h-8 w-3/4" />
+      <div className="rounded-lg bg-blue-200/20 h-24 w-full" />
+      <div className="rounded-lg bg-blue-200/20 h-16 w-full" />
+      <div className="rounded-lg bg-blue-200/20 h-20 w-5/6" />
+    </div>
+  );
+}
   async function loadArticles(reset = false) {
     try {
       setLoading(true);
@@ -68,34 +79,38 @@ export default function HomePage() {
           {featured ? (
             <FeaturedNews article={featured} />
           ) : (
-            <p className="text-gray-500">Loading featured news...</p>
+            <div className="animate-pulse rounded-xl bg-blue-200/20 h-60 w-full" />
           )}
         </div>
 
-        {/* Grid of NewsCards */}
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {articles.map((a, i) => (
-            <NewsCard
-              key={a._id || i}
-              news={{
-                id: a._id,
-                title: a.headline,
-                url: a.url || `${API_BASE}/article/${a._id}`,
-                image: a.imgs?.[0] || fallback,
-                sources: a.sources || 0,
-                bias:
-                  a.bias_left || a.bias_center || a.bias_right
-                    ? {
-                        left: Math.round((a.bias_left || 0) * 100),
-                        center: Math.round((a.bias_center || 0) * 100),
-                        right: Math.round((a.bias_right || 0) * 100),
-                      }
-                    : null,
-              }}
-              className={i === 2 ? "lg:col-span-2 lg:row-span-2" : ""}
-            />
-          ))}
-        </div>
+        {/* Grid of NewsCards or Skeleton */}
+        {loading && page === 0 ? (
+          <NewsSkeleton count={12} />
+        ) : (
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {articles.map((a, i) => (
+              <NewsCard
+                key={a._id || i}
+                news={{
+                  id: a._id,
+                  title: a.headline,
+                  url: a.url || `${API_BASE}/article/${a._id}`,
+                  image: a.imgs?.[0] || fallback,
+                  sources: a.imgs?.length || 0,
+                  bias:
+                    a.bias_left || a.bias_center || a.bias_right
+                      ? {
+                          left: Math.round((a.bias_left || 0) * 100),
+                          center: Math.round((a.bias_center || 0) * 100),
+                          right: Math.round((a.bias_right || 0) * 100),
+                        }
+                      : null,
+                }}
+                className={i === 2 ? "lg:col-span-2 lg:row-span-2" : ""}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Load More Button */}
         {hasMore && (
@@ -112,11 +127,9 @@ export default function HomePage() {
       </div>
 
       {/* Right side: Market Dashboard */}
-      {featured && !loading && (
-        <aside className="hidden lg:block w-full lg:w-[430px] lg:sticky lg:top-20 lg:h-[calc(100vh-7rem)]">
-          <MarketDashboard />
-        </aside>
-      )}
+      <aside className="hidden lg:block w-[260px] lg:sticky lg:top-10 self-start h-1/2">
+        {featured || loading ? <MarketDashboard /> : <MarketSkeleton/>}
+      </aside>
     </div>
   );
 }

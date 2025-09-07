@@ -79,7 +79,7 @@ export default function ForYouPage() {
   }, []);
 
   return (
-    <section className="px-4 sm:px-6 lg:px-12 py-12">
+    <section className="px-4 ">
       <div className="mb-12 text-center max-w-2xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-bold text-text-primary tracking-tight">
           For You

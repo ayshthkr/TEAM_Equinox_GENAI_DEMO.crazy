@@ -57,7 +57,7 @@ export default function SearchPageContent() {
   }, [query]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 px-4 sm:px-6 lg:px-8">
+    <div className="flex flex-col lg:flex-row gap-6 px-4 ">
       {/* Left content */}
       <div className="flex-1">
         <h1 className="text-2xl sm:text-3xl font-bold mb-5">

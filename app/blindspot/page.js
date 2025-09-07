@@ -65,8 +65,8 @@ export default function CategoryPage() {
   const rows = leftBlindspots.length;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-12 py-10 bg-background">
-      <div className="max-w-7xl mx-auto">
+    <section className="px-4sm:px-6 lg:px-12 py-10 bg-background">
+      <div className="max-w-full mx-auto">
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl md:text-4xl font-bold text-text-primary">

@@ -73,7 +73,7 @@ export default function TopNewsPage() {
   }));
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-8 space-y-10">
+    <div className="max-w-6xl mx-auto px-4  space-y-10">
       {/* Page Heading */}
       <h1 className="text-3xl sm:text-4xl font-extrabold text-text-primary text-center mb-6">
         📰 Top News

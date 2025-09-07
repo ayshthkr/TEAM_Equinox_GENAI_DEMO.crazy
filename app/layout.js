@@ -13,7 +13,7 @@ export default function RootLayout({ children }) {
       <html lang="en">
         <body className="text-text-primary bg-background">
           <Navbar />
-          <main className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
+          <main className="max-w-full mx-auto px-4 lg:px-4 py-6">
             <div className="flex-1">{children}</div>
           </main>
 
