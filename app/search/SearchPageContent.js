@@ -26,7 +26,7 @@ export default function SearchPageContent() {
         const res = await fetch(`${API_BASE}/article/search`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query }), // backend expects { query }
+          body: JSON.stringify({ query }), 
         });
 
         if (!res.ok) {
