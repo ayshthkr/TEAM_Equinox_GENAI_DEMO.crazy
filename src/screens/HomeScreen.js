@@ -1,5 +1,5 @@
 // src/screens/HomeScreen.js
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Appbar } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import CategoryTabs from '../components/CategoryTabs';
 import SwipableCardContainer from '../components/SwipableCardContainer';
 import NewsCard from '../components/NewsCard';
@@ -17,30 +18,61 @@ import LoadingCard from '../components/LoadingCard';
 import EmptyState from '../components/EmptyState';
 import useArticles from '../hooks/useArticles';
 import Colors from '../constants/colors';
+import { getInterestedTags } from '../storage/preferences';
 
 const HomeScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [viewMode, setViewMode] = useState('scroll'); // 'scroll' or 'swipe'
-  const [categories, setCategories] = useState(['All']);
+  const [categories, setCategories] = useState(['For You', 'Top News', 'All']);
+  const [interestedTags, setInterestedTags] = useState([]);
 
   // Map selectedCategory to API tags
-  const tags = useMemo(() => (selectedCategory === 'All' ? [] : [selectedCategory]), [selectedCategory]);
+  const tags = useMemo(() => {
+    if (selectedCategory === 'For You') return interestedTags;
+    if (selectedCategory === 'All' || selectedCategory === 'Top News') return [];
+    return [selectedCategory];
+  }, [selectedCategory, interestedTags]);
 
   // Use the hook
-  const { 
+  const {
     articles,
     loading,
     refreshing,
     canLoadMore,
     loadMore,
     refresh,
-    error,
   } = useArticles({ tags, limit: 20 });
+
+  // Load interested tags on focus and on mount
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        const t = await getInterestedTags();
+        setInterestedTags(Array.isArray(t) ? t : []);
+      })();
+    }, [])
+  );
+
+  useEffect(() => {
+    (async () => {
+      const t = await getInterestedTags();
+      setInterestedTags(Array.isArray(t) ? t : []);
+    })();
+  }, []);
+
+  // Compute display list (Top News sorted by urlCount)
+  const displayedArticles = useMemo(() => {
+    if (selectedCategory === 'Top News') {
+      const sorted = [...articles].sort((a, b) => (b?.urlCount || 0) - (a?.urlCount || 0));
+      return sorted;
+    }
+    return articles;
+  }, [articles, selectedCategory]);
 
   // Derive categories from articles
   useEffect(() => {
     const setFromArticles = () => {
-      const set = new Set(['All']);
+      const set = new Set(['For You', 'Top News', 'All']);
       for (const a of articles) {
         if (a?.category) set.add(a.category);
       }
@@ -54,8 +86,6 @@ const HomeScreen = ({ navigation }) => {
     setViewMode((v) => (v === 'scroll' ? 'swipe' : 'scroll'));
   };
 
-  // Momentum guard to prevent multiple onEndReached triggers
-  const onEndReachedCalledDuringMomentum = useRef(true);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -86,7 +116,7 @@ const HomeScreen = ({ navigation }) => {
       {/* Main content */}
       {viewMode === 'swipe' ? (
         <SwipableCardContainer
-          articles={articles}
+          articles={displayedArticles}
           navigation={navigation}
           onSwipeUp={() => {}}
           onSwipeDown={() => {}}
@@ -97,7 +127,7 @@ const HomeScreen = ({ navigation }) => {
       ) : (
       <FlatList
   style={styles.scrollView}
-  data={articles}
+  data={displayedArticles}
   keyExtractor={(item, index) => String(item?.id ?? index)}
   renderItem={({ item }) => (
     <NewsCard

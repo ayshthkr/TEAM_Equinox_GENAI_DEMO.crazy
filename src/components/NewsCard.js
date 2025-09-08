@@ -13,6 +13,7 @@ import * as WebBrowser from "expo-web-browser";
 import { Card, Chip, IconButton, Portal, Modal } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import BiasIndicator from "./BiasIndicator";
+import { BlurView } from "expo-blur";
 import Colors from "../constants/colors";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -83,7 +84,9 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
       <Card style={[styles.card, isSwipable && styles.swipableCard]}>
         <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
           {/* Image Carousel */}
-          {Array.isArray(article.images) && article.images.length > 0 && !imageError ? (
+          {Array.isArray(article.images) &&
+          article.images.length > 0 &&
+          !imageError ? (
             <View style={styles.imageContainer}>
               {/* Left Button */}
               {currentIndex > 0 && (
@@ -124,20 +127,20 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
               )}
 
               <View style={styles.imageOverlay}>
-                <Chip
-                  mode="flat"
-                  style={[
-                    styles.categoryChip,
-                    { backgroundColor: getBiasColor(article.bias) },
-                  ]}
-                  textStyle={styles.categoryChipText}
-                >
-                  {article.category}
-                </Chip>
+                <BlurView intensity={70} tint="dark" style={styles.blurWrapper}>
+                  <Chip
+                    mode="outlined"
+                    style={styles.categoryChip}
+                    textStyle={styles.categoryChipText}
+                  >
+                    {article.category}
+                  </Chip>
+                </BlurView>
               </View>
             </View>
           ) : (
-            article.image && !imageError && (
+            article.image &&
+            !imageError && (
               <View style={styles.imageContainer}>
                 <Image
                   source={{ uri: article.image }}
@@ -146,23 +149,25 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
                   resizeMode="cover"
                 />
                 <View style={styles.imageOverlay}>
+                 <BlurView intensity={70} tint="dark" style={styles.blurWrapper}>
                   <Chip
-                    mode="flat"
-                    style={[
-                      styles.categoryChip,
-                      { backgroundColor: getBiasColor(article.bias) },
-                    ]}
+                    mode="outlined"
+                    style={styles.categoryChip}
                     textStyle={styles.categoryChipText}
                   >
                     {article.category}
                   </Chip>
+                </BlurView>
                 </View>
               </View>
             )
           )}
 
           <Card.Content
-            style={[styles.cardContent, isSwipable && styles.swipableCardContent]}
+            style={[
+              styles.cardContent,
+              isSwipable && styles.swipableCardContent,
+            ]}
           >
             {/* Header with source + credibility */}
             <View style={styles.header}>
@@ -175,16 +180,19 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
                 )}
                 <Text style={styles.sourceText} numberOfLines={1}>
                   {article.source}
-                  {Array.isArray(article.sources) && article.sources.length > 1 && (
-                    <Text style={styles.moreSourcesText}>
-                      {" "}
-                      +{article.sources.length - 1}
-                    </Text>
-                  )}
+                  {Array.isArray(article.sources) &&
+                    article.sources.length > 1 && (
+                      <Text style={styles.moreSourcesText}>
+                        {" "}
+                        +{article.sources.length - 1}
+                      </Text>
+                    )}
                 </Text>
               </View>
               <View style={styles.metaContainer}>
-                <Text style={styles.timeText}>{getTimeAgo(article.timestamp)}</Text>
+                <Text style={styles.timeText}>
+                  {getTimeAgo(article.timestamp)}
+                </Text>
                 <View style={styles.ringWrap}>
                   <View
                     style={[
@@ -235,33 +243,52 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
                     +{article.links.length - 1} more
                   </Chip>
                 )}
-            {/* Links Bottom Sheet */}
-            <Portal>
-              <Modal
-                visible={linksVisible}
-                onDismiss={() => setLinksVisible(false)}
-                contentContainerStyle={styles.bottomSheet}
-              >
-                <View>
-                  <Text style={styles.bottomSheetTitle}>All sources</Text>
-                  {Array.isArray(article.links) && article.links.slice(1).map((u, idx) => (
-                    <TouchableOpacity key={`link-${idx}`} style={styles.linkRow} onPress={() => openLink(u)}>
-                      {/* favicon */}
-                      <Image
-                        source={{ uri: `https://www.google.com/s2/favicons?domain=${(new URL(u).hostname || '').replace('www.', '')}&sz=64` }}
-                        style={styles.linkFavicon}
-                      />
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.linkHost} numberOfLines={1}>{(new URL(u).hostname || '').replace('www.', '')}</Text>
-                        <Text style={styles.linkUrl} numberOfLines={1}>{u}</Text>
-                      </View>
-                      <Ionicons name="open-outline" size={18} color={Colors.accent.primary} />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </Modal>
-            </Portal>
-
+                {/* Links Bottom Sheet */}
+                <Portal>
+                  <Modal
+                    visible={linksVisible}
+                    onDismiss={() => setLinksVisible(false)}
+                    contentContainerStyle={styles.bottomSheet}
+                  >
+                    <View>
+                      <Text style={styles.bottomSheetTitle}>All sources</Text>
+                      {Array.isArray(article.links) &&
+                        article.links.slice(1).map((u, idx) => (
+                          <TouchableOpacity
+                            key={`link-${idx}`}
+                            style={styles.linkRow}
+                            onPress={() => openLink(u)}
+                          >
+                            {/* favicon */}
+                            <Image
+                              source={{
+                                uri: `https://www.google.com/s2/favicons?domain=${(
+                                  new URL(u).hostname || ""
+                                ).replace("www.", "")}&sz=64`,
+                              }}
+                              style={styles.linkFavicon}
+                            />
+                            <View style={{ flex: 1 }}>
+                              <Text style={styles.linkHost} numberOfLines={1}>
+                                {(new URL(u).hostname || "").replace(
+                                  "www.",
+                                  ""
+                                )}
+                              </Text>
+                              <Text style={styles.linkUrl} numberOfLines={1}>
+                                {u}
+                              </Text>
+                            </View>
+                            <Ionicons
+                              name="open-outline"
+                              size={18}
+                              color={Colors.accent.primary}
+                            />
+                          </TouchableOpacity>
+                        ))}
+                    </View>
+                  </Modal>
+                </Portal>
               </View>
             )}
 
@@ -288,8 +315,6 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
           </Card.Content>
         </TouchableOpacity>
       </Card>
-
-
     </>
   );
 };
@@ -380,16 +405,22 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: Colors.text.primary,
   },
+  blurWrapper: {
+    borderRadius: 20,
+    overflow: "hidden", // makes blur rounded
+    marginRight: 6,
+  },
   categoryChip: {
-     alignSelf: "flex-start", // keeps chip only as wide as text
-  // paddingHorizontal: 12,
-  // paddingVertical: 2,
-  borderRadius: 12,
+    backgroundColor: "transparent",
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
   categoryChipText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: "600",
-    color: Colors.text.primary,
+    color: "#fff",
   },
   timeText: {
     fontSize: 11,
@@ -477,13 +508,13 @@ const styles = StyleSheet.create({
   },
   bottomSheetTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     color: Colors.text.primary,
     marginBottom: 12,
   },
   linkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     paddingVertical: 10,
   },
@@ -495,13 +526,12 @@ const styles = StyleSheet.create({
   linkHost: {
     fontSize: 13,
     color: Colors.text.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   linkUrl: {
     fontSize: 12,
     color: Colors.text.tertiary,
   },
-
 });
 
 const localStyles = StyleSheet.create({

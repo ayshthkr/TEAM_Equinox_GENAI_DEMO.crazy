@@ -19,6 +19,7 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const SWIPE_DISTANCE_RATIO = 0.15;
 const SWIPE_VELOCITY_THRESHOLD = 0.45;
 
+
 const SwipableCardContainer = ({
   articles = [],
   navigation,

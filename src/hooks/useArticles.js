@@ -57,17 +57,20 @@ export function mapApiArticle(item, index) {
     typeof item.fraud_score === 'number' ? clamp(item.fraud_score, 0, 1) : 0.3;
   const score = clamp(1 - fraud, 0, 1); // Higher = more credible
 
-  const images = Array.isArray(item.imgs) ? item.imgs.filter(Boolean) : [FALLBACK_IMAGE];
+  const images = Array.isArray(item.imgs) ? item.imgs.filter(Boolean) : [];
   const image = images.length ? images[0] : FALLBACK_IMAGE;
+  const urlCount = typeof item.url_count === 'number' ? item.url_count : links.length;
 
   return {
     id,
     title,
     summary,
     category,
+    tags,
     source,
     sources: uniqueSources,
     links,
+    urlCount,
     bias,
     timestamp: new Date(item.fetched_at || Date.now()),
     url: firstUrl || undefined,
