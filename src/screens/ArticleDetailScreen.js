@@ -1,5 +1,5 @@
 // src/screens/ArticleDetailScreen.js
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import BiasIndicator from "../components/BiasIndicator";
 import { getInterestedTags, toggleInterestedTag } from "../storage/preferences";
 
 import Colors from "../constants/colors";
+import { useFocusEffect } from "@react-navigation/native";
 
 const FALLBACK_IMAGE = 'https://thumbs.dreamstime.com/b/news-woodn-dice-depicting-letters-bundle-small-newspapers-leaning-left-dice-34802664.jpg';
 
@@ -40,7 +41,7 @@ const extractHostname = (url) => {
 const ArticleDetailScreen = ({ route, navigation }) => {
   const { article } = route.params;
   const [interested, setInterested] = useState(false);
-
+  const scrollRef = useRef(null);
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -54,6 +55,13 @@ const ArticleDetailScreen = ({ route, navigation }) => {
   }, [article?.category]);
 
   const [sourcesExpanded, setSourcesExpanded] = useState(false);
+   useFocusEffect(
+    React.useCallback(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({ y: 0, animated: true });
+      }
+    }, [])
+  );
 
   const linkHosts = useMemo(() => {
     const arr = Array.isArray(article.links) ? article.links : [];
@@ -188,6 +196,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
 
       <ScrollView
         style={styles.scrollView}
+        ref={scrollRef} 
         showsVerticalScrollIndicator={false}
       >
         {/* Image Carousel */}
@@ -386,7 +395,11 @@ const ArticleDetailScreen = ({ route, navigation }) => {
                   <TouchableOpacity
                     activeOpacity={0.85}
                     style={styles.recCard}
-                    onPress={() => item?.url && Linking.openURL(item.url)}
+                    onPress={() => {navigation.navigate("ArticleDetail", { article: item })
+                      if (scrollRef.current) {
+                        scrollRef.current.scrollTo({ y: 0, animated: true });
+                      }
+                    }}
                   >
                     <Image
                       source={{ uri: item.image }}
