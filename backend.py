@@ -131,6 +131,7 @@ def process_topics():
 from typing import Optional, List
 from bson import ObjectId
 from pymongo import MongoClient, UpdateOne
+import random
 
 # ---- Pydantic Models ---- #
 class ArticleFilter(BaseModel):
@@ -214,6 +215,7 @@ def get_articles(filters: ArticleFilter = Body(default=ArticleFilter())):
     results = list(collection.aggregate(pipeline))
 
     results = list(collection.aggregate(pipeline))
+    random.shuffle(results)
 
 # Convert ObjectId to str for JSON serialization
     for doc in results:
