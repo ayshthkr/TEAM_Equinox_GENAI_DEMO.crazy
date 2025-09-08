@@ -510,6 +510,7 @@ def fetch_and_save_exa(headlines,
                 context=True,
                 num_results=limit
             ) # type: ignore
+            
             serialized = serialize(result)
           
             
