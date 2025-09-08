@@ -213,7 +213,7 @@ Content:
 """
     for _ in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
             response = model.generate_content(prompt)
             clean = _clean_json_block(response.text)
             parsed = _safe_json_loads(clean)
@@ -265,7 +265,7 @@ Content:
 """
     for _ in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
             response = model.generate_content(prompt)
             return response.text.strip().strip('"')
         except Exception as e:
@@ -308,7 +308,7 @@ Content:
 """
     for _ in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
             response = model.generate_content(prompt)
             clean = _clean_json_block(response.text)
             parsed = _safe_json_loads(clean)
@@ -359,7 +359,7 @@ Here are the articles’ content:
 
     for _ in range(retries):
         try:
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
             response = model.generate_content(prompt)
             return response.text.strip().strip('"')
         except Exception as e:
@@ -459,6 +459,12 @@ def serialize(obj):
             return obj
 
 testrows=[]
+mongo_uri2="xxx"
+db_name2 = "mydb"
+client2 = MongoClient(mongo_uri2)
+db2 = client2[db_name2]
+collection2=db2["embeddded_articles"]
+
 def fetch_and_save_exa(headlines, 
                        mongo_uri="xxx",
                        db_name="mydb",
@@ -520,13 +526,45 @@ def fetch_and_save_exa(headlines,
             tags=generate_tags(objectified["content"])
             summary=generate_summary(objectified["content"])
             # Compute normalized bias values so that they sum to 1
-            r = random.random()
-            l = random.random()
-            c = random.random()
-            total = r + l + c
-            bias_right = r / total
-            bias_left = l / total
-            bias_center = c / total
+            query = objectified["content"]
+            embedding = get_embedding(clean_text(query))
+            pred_right  = 0
+            pred_left   = 0
+            pred_center = 0
+
+            results = collection2.aggregate([
+                {
+                    "$vectorSearch": {
+                        "index": "embedding",
+                        "queryVector": embedding,
+                        "path": "embedding",
+                        "numCandidates": 800,
+                        "limit": 500,
+                    }
+                },
+                {
+                    "$project": {
+                        "bias_right": 1,
+                        "bias_left": 1,
+                        "bias_center": 1,
+                        "score": {"$meta": "vectorSearchScore"}
+                    }
+                }
+            ])
+
+            cal_right = cal_left = cal_center = 0
+            cnt = 0
+            for r in results:
+                            
+                cnt += 1
+                cal_right += r["bias_right"]
+                cal_left  += r["bias_left"]
+                cal_center+= r["bias_center"]
+
+            if cnt > 0:
+                pred_right  = cal_right / cnt
+                pred_left   = cal_left / cnt
+                pred_center = cal_center / cnt
 
             inserttocsv={
                 "content": objectified["content"],
@@ -547,9 +585,9 @@ def fetch_and_save_exa(headlines,
                 "imgs": objectified["image"],
                 "urls": objectified["url"],
                 "summary": summary,
-                "bias_right": bias_right,
-                "bias_left": bias_left,
-                "bias_center": bias_center,
+                "bias_right": pred_right,
+                "bias_left": pred_left,
+                "bias_center": pred_center,
                 "fraud_score": random.random(),
                 "fetched_at": datetime.utcnow()
             })

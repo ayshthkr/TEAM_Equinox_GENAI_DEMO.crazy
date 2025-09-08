@@ -264,7 +264,7 @@ def search(search:SearchQuery=Body(...)):
          {
              "$sort": {
                 "fetched_at": -1,   # primary sort (latest first)
-                "url_count": -1     # secondary sort (more URLs first)
+                
             }
          }
     ]
