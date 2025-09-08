@@ -56,7 +56,7 @@ function TabNavigator() {
         }}
       />
       <Tab.Screen name="Search" component={SearchScreen} options={{  headerShown: false }} />
-      <Tab.Screen name="Analytics" component={BiasAnalyticsScreen} />
+      {/* <Tab.Screen name="Analytics" component={BiasAnalyticsScreen} /> */}
     </Tab.Navigator>
   );
 }
