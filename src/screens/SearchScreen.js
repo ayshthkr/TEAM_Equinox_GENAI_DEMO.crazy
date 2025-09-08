@@ -1,5 +1,5 @@
 // src/screens/SearchScreen.js
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { Searchbar, Appbar, Chip, IconButton } from 'react-native-paper';
 import NewsCard from '../components/NewsCard';
-import { mockNewsData } from '../data/mockData';
+import { searchArticles } from '../api/articles';
+import { mapApiArticle } from '../hooks/useArticles';
 import Colors from '../constants/colors';
 
 const SearchScreen = ({ navigation }) => {
@@ -19,30 +20,39 @@ const SearchScreen = ({ navigation }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [recentSearches, setRecentSearches] = useState(['Climate Change', 'Technology', 'Global Economy', 'Health', 'AI Innovation']);
   const [isSearching, setIsSearching] = useState(false);
+  const debounceRef = useRef(null);
+
+  const performSearch = useCallback(async (query) => {
+    const q = (query || '').trim();
+    if (!q) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const { articles } = await searchArticles(q);
+      const mapped = Array.isArray(articles) ? articles.map(mapApiArticle) : [];
+      setSearchResults(mapped);
+      if (!recentSearches.includes(q)) {
+        setRecentSearches(prev => [q, ...prev.slice(0, 4)]);
+      }
+    } catch (e) {
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [recentSearches]);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    if (query.trim()) {
-      setIsSearching(true);
-      const results = mockNewsData.filter(article =>
-        article.title.toLowerCase().includes(query.toLowerCase()) ||
-        article.summary.toLowerCase().includes(query.toLowerCase()) ||
-        article.category.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(results);
-      
-      if (!recentSearches.includes(query) && query.trim()) {
-        setRecentSearches(prev => [query, ...prev.slice(0, 4)]);
-      }
-    } else {
-      setSearchResults([]);
-      setIsSearching(false);
-    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => performSearch(query), 400);
   };
 
   const handleRecentSearchTap = (query) => {
     setSearchQuery(query);
-    handleSearch(query);
+    performSearch(query);
     Keyboard.dismiss();
   };
 
@@ -64,13 +74,13 @@ const SearchScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Appbar.Header style={styles.header}>
+      {/* <Appbar.Header style={styles.header}>
         <Appbar.BackAction onPress={() => navigation.goBack()} color={Colors.text.primary} />
         <Appbar.Content 
           title="Search News" 
           titleStyle={styles.headerTitle}
         />
-      </Appbar.Header>
+      </Appbar.Header> */}
       
       <View style={styles.searchContainer}>
         <Searchbar
@@ -81,7 +91,7 @@ const SearchScreen = ({ navigation }) => {
           style={styles.searchBar}
           iconColor={Colors.text.secondary}
           inputStyle={styles.searchInput}
-          onSubmitEditing={() => handleSearch(searchQuery)}
+          onSubmitEditing={() => performSearch(searchQuery)}
           clearIcon={searchQuery ? () => (
             <IconButton
               icon="close"
@@ -152,7 +162,7 @@ const SearchScreen = ({ navigation }) => {
             style={styles.newsCard}
           />
         )}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => String(item?.id ?? index)}
         style={styles.resultsList}
         contentContainerStyle={styles.resultsContent}
         ListEmptyComponent={
@@ -186,6 +196,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   searchContainer: {
+    paddingTop: 40,
     padding: 16,
     backgroundColor: Colors.background.secondary,
     borderBottomWidth: 1,
@@ -278,7 +289,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   resultsContent: {
-    padding: 16,
+    padding: 0,
   },
   newsCard: {
     marginBottom: 16,
@@ -292,7 +303,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: Colors.text.primary,
-    marginBottom: 8,
+    marginBottom: 8, 
     textAlign: 'center',
   },
   noResultsSubtitle: {

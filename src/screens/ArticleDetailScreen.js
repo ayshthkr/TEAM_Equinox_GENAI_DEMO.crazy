@@ -14,15 +14,14 @@ import {
 import { Appbar, Card, Chip, IconButton, Divider } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BiasIndicator from '../components/BiasIndicator';
-import FactCheckBadge from '../components/FactCheckBadge';
-import FactCheckModal from '../components/FactCheckModal';
+
 import Colors from '../constants/colors';
 
 const { width } = Dimensions.get('window');
 
 const ArticleDetailScreen = ({ route, navigation }) => {
   const { article } = route.params;
-  const [showFactCheckModal, setShowFactCheckModal] = useState(false);
+
   const [imageError, setImageError] = useState(false);
 
   const handleShare = async () => {
@@ -160,13 +159,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
             <Card.Content>
               <View style={styles.analysisHeader}>
                 <Text style={styles.analysisTitle}>Credibility Analysis</Text>
-                <IconButton
-                  icon="information-outline"
-                  size={16}
-                  onPress={() => setShowFactCheckModal(true)}
-                  style={styles.infoIcon}
-                  iconColor={Colors.text.secondary}
-                />
+
               </View>
 
               <View style={styles.analysisGrid}>
@@ -186,14 +179,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
                   <BiasIndicator bias={article.bias} />
                 </View>
 
-                {/* Fact Check */}
-                <View style={styles.analysisItem}>
-                  <Text style={styles.analysisLabel}>Fact Check</Text>
-                  <FactCheckBadge
-                    status={article.factCheck.status}
-                    confidence={article.factCheck.confidence}
-                  />
-                </View>
+
 
                 {/* Category */}
                 <View style={styles.analysisItem}>
@@ -255,11 +241,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
         </View>
       </ScrollView>
 
-      <FactCheckModal
-        visible={showFactCheckModal}
-        article={article}
-        onDismiss={() => setShowFactCheckModal(false)}
-      />
+
     </SafeAreaView>
   );
 };

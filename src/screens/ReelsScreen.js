@@ -9,10 +9,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import SwipableCardContainer from '../components/SwipableCardContainer';
 import { convertJsonToAppFormat } from '../data/dataAdapter';
 import Colors from '../constants/colors';
+import useArticles from '../hooks/useArticles';
+
 
 const ReelsScreen = ({ navigation }) => {
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    articles,
+    loading,
+    refreshing,
+    canLoadMore,
+    loadMore,
+    refresh,
+    error,
+  } = useArticles({  limit: 20 });
+  // const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadArticles();
@@ -42,15 +52,14 @@ const ReelsScreen = ({ navigation }) => {
       />
       
       {!loading && articles.length > 0 && (
-        <SwipableCardContainer
+       <SwipableCardContainer
           articles={articles}
           navigation={navigation}
-          onSwipeUp={() => {
-            // Optional: Add analytics or other actions on swipe up
-          }}
-          onSwipeDown={() => {
-            // Optional: Add analytics or other actions on swipe down
-          }}
+          onSwipeUp={() => {}}
+          onSwipeDown={() => {}}
+          canLoadMore={canLoadMore}
+          onLoadMore={loadMore}
+          isLoadingMore={loading}
         />
       )}
     </View>
