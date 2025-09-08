@@ -5,26 +5,33 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   Image,
   Share,
   Linking,
-  Dimensions,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import { Appbar, Card, Chip, IconButton, Divider } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { fetchArticles } from "../api/articles";
+import { mapApiArticle } from "../hooks/useArticles";
+
 import BiasIndicator from "../components/BiasIndicator";
 import { getInterestedTags, toggleInterestedTag } from "../storage/preferences";
 
 import Colors from "../constants/colors";
 
-const { width } = Dimensions.get("window");
+const FALLBACK_IMAGE = 'https://thumbs.dreamstime.com/b/news-woodn-dice-depicting-letters-bundle-small-newspapers-leaning-left-dice-34802664.jpg';
+
 const buildFaviconUrl = (hostname) =>
-  hostname ? `https://www.google.com/s2/favicons?domain=${hostname}&sz=64` : undefined;
+  hostname
+    ? `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`
+    : undefined;
 
 const extractHostname = (url) => {
   try {
-    return new URL(url).hostname.replace('www.', '');
+    return new URL(url).hostname.replace("www.", "");
   } catch {
     return null;
   }
@@ -38,7 +45,8 @@ const ArticleDetailScreen = ({ route, navigation }) => {
     let mounted = true;
     (async () => {
       const tags = await getInterestedTags();
-      if (mounted) setInterested(Array.isArray(tags) && tags.includes(article.category));
+      if (mounted)
+        setInterested(Array.isArray(tags) && tags.includes(article.category));
     })();
     return () => {
       mounted = false;
@@ -66,8 +74,38 @@ const ArticleDetailScreen = ({ route, navigation }) => {
     const next = await toggleInterestedTag(article.category);
     setInterested(Array.isArray(next) && next.includes(article.category));
   };
+  const [recommended, setRecommended] = useState([]);
 
-  const [imageError, setImageError] = useState(false);
+  useEffect(() => {
+    // console.log(article.images[1]);
+
+    let alive = true;
+    (async () => {
+      try {
+        const tagList =
+          Array.isArray(article.tags) && article.tags.length > 0
+            ? article.tags
+            : article.category
+            ? [article.category]
+            : [];
+        if (tagList.length === 0) {
+          if (alive) setRecommended([]);
+          return;
+        }
+        const res = await fetchArticles({ tags: tagList, limit: 5, skip: 0 });
+        const mapped = Array.isArray(res?.articles)
+          ? res.articles.map(mapApiArticle)
+          : [];
+        const deduped = mapped.filter((a) => a.id !== article.id).slice(0, 5);
+        if (alive) setRecommended(deduped);
+      } catch (e) {
+        if (alive) setRecommended([]);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [article?.id, article?.category, JSON.stringify(article?.tags)]);
 
   const handleShare = async () => {
     try {
@@ -152,13 +190,30 @@ const ArticleDetailScreen = ({ route, navigation }) => {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Image */}
-        {article.image && !imageError && (
+        {/* Image Carousel */}
+        {Array.isArray(article.images) && article.images.length > 0 ? (
+          <View style={styles.imageContainer}>
+            <FlatList
+              data={article.images.slice(0, 5)}
+              keyExtractor={(_, idx) => `${article.id}-img-${idx}`}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <Image
+                  source={{ uri: item }}
+                  style={styles.heroImage}
+                  resizeMode="cover"
+                />
+              )}
+            />
+          </View>
+        ) : (
+          // fallback image when no images
           <View style={styles.imageContainer}>
             <Image
-              source={{ uri: article.image }}
+              source={ {uri: FALLBACK_IMAGE}} // put your fallback image here
               style={styles.heroImage}
-              onError={() => setImageError(true)}
               resizeMode="cover"
             />
           </View>
@@ -284,11 +339,13 @@ const ArticleDetailScreen = ({ route, navigation }) => {
                           />
                         ))}
                         {linkHosts.length > 3 && (
-                          <Text style={styles.moreBadge}>+{linkHosts.length - 3}</Text>
+                          <Text style={styles.moreBadge}>
+                            +{linkHosts.length - 3}
+                          </Text>
                         )}
                       </View>
                       <Text style={styles.sourceHostText}>
-                        {sourcesExpanded ? 'Hide sources' : 'View sources'}
+                        {sourcesExpanded ? "Hide sources" : "View sources"}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -301,27 +358,48 @@ const ArticleDetailScreen = ({ route, navigation }) => {
                           style={styles.sourceListItem}
                           onPress={() => handleOpenSource(l.url)}
                         >
-                          <Image source={{ uri: l.favicon }} style={styles.sourceListIcon} />
+                          <Image
+                            source={{ uri: l.favicon }}
+                            style={styles.sourceListIcon}
+                          />
                           <Text style={styles.sourceListText}>{l.host}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
                   )}
                 </View>
-
               </View>
             </Card.Content>
           </Card>
 
-          {/* Full Article Text */}
-          {/* {article.originalText && (
-            <Card style={styles.textCard} elevation={1}>
-              <Card.Content>
-                <Text style={styles.textTitle}>Full Article</Text>
-                <Text style={styles.fullText}>{article.originalText}</Text>
-              </Card.Content>
-            </Card>
-          )} */}
+          {/* Recommended */}
+          {recommended.length > 0 && (
+            <View style={styles.recSection}>
+              <Text style={styles.recTitle}>Recommended</Text>
+              <FlatList
+                data={recommended}
+                keyExtractor={(item, idx) => String(item?.id ?? idx)}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.recList}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    style={styles.recCard}
+                    onPress={() => item?.url && Linking.openURL(item.url)}
+                  >
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.recImage}
+                    />
+                    <Text numberOfLines={2} style={styles.recCardTitle}>
+                      {item.title}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          )}
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
@@ -398,15 +476,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageContainer: {
-    position: "relative",
-    height: 280,
-    width: "100%",
-    backgroundColor: Colors.background.tertiary,
-  },
-  heroImage: {
-    width: "100%",
-    height: "100%",
-  },
+  position: "relative",
+  height: 280,
+  width: "100%", // ensures container spans full width
+  backgroundColor: Colors.background.tertiary,
+},
+heroImage: {
+  width: Dimensions.get("window").width, // 👈 ensures each image spans screen width
+  height: "100%",
+},
   imageOverlay: {
     position: "absolute",
     top: 20,
@@ -525,15 +603,15 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   analysisItem: {
-  marginBottom: 12,
-},
+    marginBottom: 12,
+  },
 
-analysisLabel: {
-  fontSize: 14,
-  fontWeight: "700",
-  marginBottom: 6,
-  color: "#333",
-},
+  analysisLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 6,
+    color: "#333",
+  },
   scoreContainer: {
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -544,32 +622,63 @@ analysisLabel: {
     fontSize: 14,
     fontWeight: "600",
   },
+
+  // Recommended styles
+  recSection: {
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  recTitle: {
+    color: Colors.text.primary,
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+  recList: {
+    paddingRight: 12,
+  },
+  recCard: {
+    width: 180,
+    marginRight: 12,
+  },
+  recImage: {
+    width: 180,
+    height: 110,
+    borderRadius: 12,
+    backgroundColor: Colors.background.tertiary,
+    marginBottom: 6,
+  },
+  recCardTitle: {
+    color: Colors.text.primary,
+    fontSize: 14,
+    fontWeight: "600",
+  },
   tagsContainer: {
-  flexDirection: "row",   // side by side
-  flexWrap: "wrap",       // wrap to new line if needed
-  gap: 8,                 // RN 0.71+ (else use margin)
-},
+    flexDirection: "row", // side by side
+    flexWrap: "wrap", // wrap to new line if needed
+    gap: 8, // RN 0.71+ (else use margin)
+  },
 
-categoryBadge: {
-  borderColor: "#4A90E2",
-  backgroundColor: "transparent",
-  marginRight: 8,  // fallback if gap not supported
-  marginBottom: 8, // fallback if gap not supported
-},
+  categoryBadge: {
+    borderColor: "#4A90E2",
+    backgroundColor: "transparent",
+    marginRight: 8, // fallback if gap not supported
+    marginBottom: 8, // fallback if gap not supported
+  },
 
-categoryBadgeText: {
-  color: "#4A90E2",
-  fontWeight: "600",
-},
+  categoryBadgeText: {
+    color: "#4A90E2",
+    fontWeight: "600",
+  },
   // Sources styles
   sourcesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 4,
   },
   sourcesStack: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   sourceAvatar: {
     width: 22,
@@ -582,20 +691,20 @@ categoryBadgeText: {
   moreBadge: {
     marginLeft: 6,
     color: Colors.text.secondary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   sourceHostText: {
     marginLeft: 10,
     color: Colors.text.secondary,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   sourceList: {
     marginTop: 8,
   },
   sourceListItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 6,
   },
   sourceListIcon: {
@@ -619,14 +728,14 @@ categoryBadgeText: {
   },
   textTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.text.primary,
     marginBottom: 16,
     letterSpacing: -0.5,
   },
   interestedChip: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0, 122, 255, 0.15)',
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(0, 122, 255, 0.15)",
     borderRadius: 14,
     height: 28,
     paddingHorizontal: 12,
@@ -634,7 +743,7 @@ categoryBadgeText: {
   interestedChipText: {
     color: Colors.accent.primary,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   fullText: {
     fontSize: 15,
