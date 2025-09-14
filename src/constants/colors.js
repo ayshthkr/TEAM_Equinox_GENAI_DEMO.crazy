@@ -40,9 +40,9 @@ export const Colors = {
   },
 
   bias: {
-    left: '#FF6B35',          // Orange for left bias
-    center: '#00C851',        // Green for center
-    right: '#007AFF',         // Blue for right bias
+    right: '#FF6B35',          // Orange for left bias
+    center: '#E0E0E0',        // Green for center
+    left: '#007AFF',         // Blue for right bias
   },
 
   surface: {

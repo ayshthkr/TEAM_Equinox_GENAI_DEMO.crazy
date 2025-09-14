@@ -88,8 +88,8 @@ const HomeScreen = ({ navigation }) => {
       {/* Header */}
       <Appbar.Header style={styles.header}>
         <Text style={styles.headerTitle}>
-          <Text style={{ color: "white" }}>NEWS</Text>
-          <Text style={{ color: "#1E90FF" }}>.app</Text>
+          <Text style={{ color: "white" }}>DEMO</Text>
+          <Text style={{ color: "#1E90FF" }}>.crazy</Text>
         </Text>
       </Appbar.Header>
 

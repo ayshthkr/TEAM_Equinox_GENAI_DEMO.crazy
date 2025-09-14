@@ -76,7 +76,7 @@ const getStaticDistribution = (bias) => {
       </View>
 
       {/* Current Bias Indicator */}
-      <View style={styles.currentBiasContainer}>
+      {/* <View style={styles.currentBiasContainer}>
         <Text style={styles.currentBiasLabel}>Current Article Bias:</Text>
         <View style={styles.currentBias}>
           <View 
@@ -89,7 +89,7 @@ const getStaticDistribution = (bias) => {
             {config.label}
           </Text>
         </View>
-      </View>
+      </View> */}
     </View>
   );
 };

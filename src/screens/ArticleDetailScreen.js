@@ -55,7 +55,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
   }, [article?.category]);
 
   const [sourcesExpanded, setSourcesExpanded] = useState(false);
-   useFocusEffect(
+  useFocusEffect(
     React.useCallback(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTo({ y: 0, animated: true });
@@ -94,8 +94,8 @@ const ArticleDetailScreen = ({ route, navigation }) => {
           Array.isArray(article.tags) && article.tags.length > 0
             ? article.tags
             : article.category
-            ? [article.category]
-            : [];
+              ? [article.category]
+              : [];
         if (tagList.length === 0) {
           if (alive) setRecommended([]);
           return;
@@ -196,7 +196,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
 
       <ScrollView
         style={styles.scrollView}
-        ref={scrollRef} 
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
       >
         {/* Image Carousel */}
@@ -221,7 +221,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
           // fallback image when no images
           <View style={styles.imageContainer}>
             <Image
-              source={ {uri: FALLBACK_IMAGE}} // put your fallback image here
+              source={{ uri: FALLBACK_IMAGE }} // put your fallback image here
               style={styles.heroImage}
               resizeMode="cover"
             />
@@ -235,34 +235,33 @@ const ArticleDetailScreen = ({ route, navigation }) => {
 
             <View style={styles.metaInfo}>
               <View style={styles.sourceContainer}>
-                {article.favicon && (
-                  <Image
-                    source={{ uri: article.favicon }}
-                    style={styles.favicon}
-                    onError={() => {}}
-                  />
-                )}
-                <Text style={styles.sourceText}>{article.source}</Text>
-                {article.author && (
-                  <Text style={styles.authorText}>• by {article.author}</Text>
-                )}
+
+                <Text style={styles.timeText}>
+                  {getTimeAgo(article.timestamp)}
+                </Text>
               </View>
-              <Text style={styles.timeText}>
-                {getTimeAgo(article.timestamp)}
-              </Text>
+              {interested && (
+                <View style={{ marginTop: 8 }}>
+                  <Chip
+                    mode="flat"
+                    style={styles.interestedChip}
+                    textStyle={styles.interestedChipText}
+                  >
+                    Interested in this topic
+                  </Chip>
+                </View>
+              )}
             </View>
 
-            {interested && (
+            {article.generative_explanation && (
               <View style={{ marginTop: 8 }}>
-                <Chip
-                  mode="flat"
-                  style={styles.interestedChip}
-                  textStyle={styles.interestedChipText}
-                >
-                  Interested in this topic
-                </Chip>
+                {/* <Text style={styles.textTitle}>k</Text> */}
+                <Text style={styles.heroText}>
+                  {article.generative_explanation}
+                </Text>
               </View>
             )}
+
           </View>
 
           <Divider style={styles.divider} />
@@ -330,6 +329,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
                 {/* Sources */}
                 <View style={styles.analysisItem}>
                   <Text style={styles.analysisLabel}>Sources</Text>
+
                   {linkHosts.length > 0 && (
                     <TouchableOpacity
                       style={styles.sourcesRow}
@@ -358,22 +358,46 @@ const ArticleDetailScreen = ({ route, navigation }) => {
                       </Text>
                     </TouchableOpacity>
                   )}
-
+                  {sourcesExpanded && (
+                    <View style={styles.legendRow}>
+                      <View style={styles.legendItem}>
+                        <View style={[styles.legendDot, { backgroundColor: "#e74c3c" }]} />
+                        <Text style={styles.legendText}>Less Reliable </Text>
+                      </View>
+                      <View style={styles.legendItem}>
+                        <View style={[styles.legendDot, { backgroundColor: "#E0E0E0" }]} />
+                        <Text style={styles.legendText}>Reliable</Text>
+                      </View>
+                    </View>
+                  )}
                   {sourcesExpanded && (
                     <View style={styles.sourceList}>
-                      {linkHosts.map((l, idx) => (
-                        <TouchableOpacity
-                          key={`src-item-${idx}`}
-                          style={styles.sourceListItem}
-                          onPress={() => handleOpenSource(l.url)}
-                        >
-                          <Image
-                            source={{ uri: l.favicon }}
-                            style={styles.sourceListIcon}
-                          />
-                          <Text style={styles.sourceListText}>{l.host}</Text>
-                        </TouchableOpacity>
-                      ))}
+                      {linkHosts.map((l, idx) => {
+                        const score = article?.url_analysis?.[idx]?.score ?? null;
+                        const isNotReliable = score !== null && score <= 50;
+                        return (
+
+                          <TouchableOpacity
+                            key={`src-item-${idx}`}
+                            style={styles.sourceListItem}
+                            onPress={() => handleOpenSource(l.url)}
+                          >
+                            <Image
+                              source={{ uri: l.favicon }}
+                              style={styles.sourceListIcon}
+                            />
+                            <Text
+                              style={[
+                                styles.sourceListText,
+                                { color: isNotReliable ? "#e74c3c" : "#E0E0E0" }, // green if reliable, red if not
+                              ]}
+                            >
+                              {l.host} 
+                            </Text>
+                            {/* <Text style={styles.sourceListText}>{l.host}</Text> */}
+                          </TouchableOpacity>
+                        )
+                      })}
                     </View>
                   )}
                 </View>
@@ -395,7 +419,8 @@ const ArticleDetailScreen = ({ route, navigation }) => {
                   <TouchableOpacity
                     activeOpacity={0.85}
                     style={styles.recCard}
-                    onPress={() => {navigation.navigate("ArticleDetail", { article: item })
+                    onPress={() => {
+                      navigation.navigate("ArticleDetail", { article: item })
                       if (scrollRef.current) {
                         scrollRef.current.scrollTo({ y: 0, animated: true });
                       }
@@ -489,15 +514,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageContainer: {
-  position: "relative",
-  height: 280,
-  width: "100%", // ensures container spans full width
-  backgroundColor: Colors.background.tertiary,
-},
-heroImage: {
-  width: Dimensions.get("window").width, // 👈 ensures each image spans screen width
-  height: "100%",
-},
+    position: "relative",
+    height: 280,
+    width: "100%", // ensures container spans full width
+    backgroundColor: Colors.background.tertiary,
+  },
+  heroImage: {
+    width: Dimensions.get("window").width, // 👈 ensures each image spans screen width
+    height: "100%",
+  },
   imageOverlay: {
     position: "absolute",
     top: 20,
@@ -517,7 +542,7 @@ heroImage: {
     padding: 20,
   },
   articleHeader: {
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   title: {
     fontSize: 26,
@@ -567,6 +592,14 @@ heroImage: {
     marginVertical: 20,
     height: 1,
   },
+  heroText: {
+    fontSize: 16,
+    color: Colors.text.secondary,
+    lineHeight: 24,
+    // marginBottom: 12,
+    fontWeight: "600",
+    fontStyle: "italic",
+  },
   summaryCard: {
     backgroundColor: Colors.background.secondary,
     marginBottom: 20,
@@ -605,6 +638,27 @@ heroImage: {
     fontWeight: "600",
     color: Colors.text.primary,
     letterSpacing: -0.5,
+  },
+  legendRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    // marginBottom: 5,
+    marginTop: 12,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 6,
+  },
+  legendText: {
+    fontSize: 12,
+    color: "#ccc",
+    fontWeight: "600",
   },
   infoIcon: {
     margin: 0,
@@ -729,6 +783,10 @@ heroImage: {
   },
   sourceListText: {
     color: Colors.text.primary,
+    fontSize: 14,
+  },
+  unreliableSourceText: {
+    color: "#e74c3c",
     fontSize: 14,
   },
 

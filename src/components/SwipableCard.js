@@ -203,7 +203,7 @@ const SwipableCard = ({ article, onPress }) => {
           </Text>
 
           {/* Links */}
-          {Array.isArray(article.links) && article.links.length > 0 && (
+          {/* {Array.isArray(article.links) && article.links.length > 0 && (
             <View style={styles.linksRow}>
               <Chip
                 icon="link-variant"
@@ -223,7 +223,7 @@ const SwipableCard = ({ article, onPress }) => {
                 </Chip>
               )}
             </View>
-          )}
+          )} */}
 
           {/* Footer */}
           <View style={styles.footer}>
@@ -233,14 +233,14 @@ const SwipableCard = ({ article, onPress }) => {
                 <Text style={styles.authorText}>by {article.author}</Text>
               ) : null}
             </View>
-            <View style={styles.rightFooter}>
+            {/* <View style={styles.rightFooter}>
               <IconButton
                 icon="share-variant"
                 size={18}
                 iconColor={Colors.text.tertiary}
                 onPress={() => {}}
               />
-            </View>
+            </View> */}
           </View>
         </View>
       </TouchableOpacity>

@@ -28,7 +28,7 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
     if (!url) return;
     try {
       await WebBrowser.openBrowserAsync(url);
-    } catch {}
+    } catch { }
   };
 
   const getBiasColor = (bias) => {
@@ -67,7 +67,7 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
   const handleScroll = (event) => {
     const index = Math.round(
       event.nativeEvent.contentOffset.x /
-        event.nativeEvent.layoutMeasurement.width
+      event.nativeEvent.layoutMeasurement.width
     );
     setCurrentIndex(index);
   };
@@ -85,8 +85,8 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
         <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
           {/* Image Carousel */}
           {Array.isArray(article.images) &&
-          article.images.length > 0 &&
-          !imageError ? (
+            article.images.length > 0 &&
+            !imageError ? (
             <View style={styles.imageContainer}>
               {/* Left Button */}
               {currentIndex > 0 && (
@@ -149,15 +149,15 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
                   resizeMode="cover"
                 />
                 <View style={styles.imageOverlay}>
-                 <BlurView intensity={70} tint="dark" style={styles.blurWrapper}>
-                  <Chip
-                    mode="outlined"
-                    style={styles.categoryChip}
-                    textStyle={styles.categoryChipText}
-                  >
-                    {article.category}
-                  </Chip>
-                </BlurView>
+                  <BlurView intensity={70} tint="dark" style={styles.blurWrapper}>
+                    <Chip
+                      mode="outlined"
+                      style={styles.categoryChip}
+                      textStyle={styles.categoryChipText}
+                    >
+                      {article.category}
+                    </Chip>
+                  </BlurView>
                 </View>
               </View>
             )
@@ -224,7 +224,7 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
             </Text>
 
             {/* Links */}
-            {Array.isArray(article.links) && article.links.length > 0 && (
+            {/* {Array.isArray(article.links) && article.links.length > 0 && (
               <View style={styles.linksRow}>
                 <Chip
                   icon="link-variant"
@@ -243,7 +243,6 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
                     +{article.links.length - 1} more
                   </Chip>
                 )}
-                {/* Links Bottom Sheet */}
                 <Portal>
                   <Modal
                     visible={linksVisible}
@@ -259,7 +258,6 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
                             style={styles.linkRow}
                             onPress={() => openLink(u)}
                           >
-                            {/* favicon */}
                             <Image
                               source={{
                                 uri: `https://www.google.com/s2/favicons?domain=${(
@@ -290,7 +288,7 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
                   </Modal>
                 </Portal>
               </View>
-            )}
+            )} */}
 
             {/* Footer with bias + fact-check */}
             <View style={styles.footer}>
@@ -301,7 +299,7 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
                 )}
               </View>
 
-              <View style={styles.rightFooter}>
+              {/* <View style={styles.rightFooter}>
                 <IconButton
                   icon="share-variant"
                   size={18}
@@ -310,7 +308,7 @@ const NewsCard = ({ article, onPress, isSwipable = false }) => {
                     // Handle share
                   }}
                 />
-              </View>
+              </View> */}
             </View>
           </Card.Content>
         </TouchableOpacity>

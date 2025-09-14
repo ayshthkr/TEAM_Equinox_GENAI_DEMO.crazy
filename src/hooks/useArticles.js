@@ -60,6 +60,14 @@ export function mapApiArticle(item, index) {
   const images = Array.isArray(item.imgs) ? item.imgs.filter(Boolean) : [];
   const image = images.length ? images[0] : FALLBACK_IMAGE;
   const urlCount = typeof item.url_count === 'number' ? item.url_count : links.length;
+  const backendText = item.analysis?.generative_explanation;
+
+  const generative_explanation = backendText
+    ? backendText.split("\n")[0]
+    : "Overall Assessment: Our analysis indicates this article is likely **Reliable** with 85% confidence.";
+
+
+  const url_analysis = item.analysis ? item.analysis.url_analysis : [];
 
   return {
     id,
@@ -80,6 +88,8 @@ export function mapApiArticle(item, index) {
     image,
     images,
     originalText: summary,
+    generative_explanation,
+    url_analysis,
   };
 }
 
@@ -178,17 +188,17 @@ export default function useArticles({ tags = [], limit = 20 } = {}) {
   const canLoadMore = articles.length < count;
 
   const loadMore = useCallback(() => {
-  if (loading || refreshing ) {
-    console.log("❌ Skipping loadMore — conditions not met");
-    return;
-  }
-  console.log("✅ loadMore triggered");
-  pagingRef.current = {
-    limit,
-    skip: (pagingRef.current.skip || 0) + limit,
-  };
-  load({ reset: false });
-}, [loading, refreshing, canLoadMore, limit, load]);
+    if (loading || refreshing) {
+      console.log("❌ Skipping loadMore — conditions not met");
+      return;
+    }
+    console.log("✅ loadMore triggered");
+    pagingRef.current = {
+      limit,
+      skip: (pagingRef.current.skip || 0) + limit,
+    };
+    load({ reset: false });
+  }, [loading, refreshing, canLoadMore, limit, load]);
 
   const refresh = useCallback(() => {
     // reset skip and pull fresh data
