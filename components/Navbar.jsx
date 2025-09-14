@@ -34,13 +34,18 @@ export default function Navbar() {
       className="sticky top-0 z-50 border-b border-zinc-800/70 backdrop-blur-md"
       style={{ backgroundColor: "#0A1628" }}
     >
+      <div className="w-full bg-yellow-300 font-light text-black text-center p-2">
+        The API and scrapers have been closed on 13/09/25 due to GPU
+        requirements and server costs, hence the news articles are old.
+        Inconvenience is regretted.
+      </div>
       <div className="max-w-7xl mx-auto px-6 flex h-14 items-center justify-between">
         {/* Logo */}
         <Link
           href="/"
           className="text-xl font-extrabold tracking-tight text-white"
         >
-          NEWS<span className="text-blue-500">.app</span>
+          DEMO.CRAZY
         </Link>
 
         {/* Desktop nav */}
@@ -78,7 +83,7 @@ export default function Navbar() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-40 lg:w-56 px-3 py-1.5 rounded-md 
+              className="w-40 lg:w-56 px-3 py-1.5 rounded-md
                          bg-gradient-to-br from-[#1E2A38] to-[#0D1B2A]
                          border border-zinc-700/60
                          text-sm text-zinc-200 placeholder-zinc-500
@@ -106,7 +111,7 @@ export default function Navbar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
-                className="w-full px-3 py-2 rounded-md 
+                className="w-full px-3 py-2 rounded-md
                            bg-gradient-to-br from-[#1E2A38] to-[#0D1B2A]
                            border border-zinc-700/60
                            text-sm text-zinc-200 placeholder-zinc-500
