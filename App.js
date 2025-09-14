@@ -40,10 +40,15 @@ function TabNavigator() {
         tabBarInactiveTintColor: Colors.text.tertiary,
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.background.secondary ,
+          backgroundColor: Colors.background.secondary,
           borderTopWidth: 0,
           elevation: 0,
-          height: 60,
+          height: 70,
+        },
+        tabBarItemStyle: {
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: 10,
         },
       })}
     >
@@ -55,7 +60,7 @@ function TabNavigator() {
           tabBarLabel: 'Reels',
         }}
       />
-      <Tab.Screen name="Search" component={SearchScreen} options={{  headerShown: false }} />
+      <Tab.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
       {/* <Tab.Screen name="Analytics" component={BiasAnalyticsScreen} /> */}
     </Tab.Navigator>
   );
@@ -68,13 +73,13 @@ export default function App() {
       <NavigationContainer>
         <StatusBar style="auto" />
         <Stack.Navigator>
-          <Stack.Screen 
-            name="Main" 
-            component={TabNavigator} 
+          <Stack.Screen
+            name="Main"
+            component={TabNavigator}
             options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name="ArticleDetail" 
+          <Stack.Screen
+            name="ArticleDetail"
             component={ArticleDetailScreen}
             options={{ headerShown: false }}
           />

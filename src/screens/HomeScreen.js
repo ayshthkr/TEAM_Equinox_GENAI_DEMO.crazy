@@ -25,7 +25,8 @@ const HomeScreen = ({ navigation }) => {
   const [viewMode, setViewMode] = useState("scroll"); // 'scroll' or 'swipe'
   const [categories, setCategories] = useState(["For You", "Top News", "All"]);
   const [interestedTags, setInterestedTags] = useState([]);
-
+  const [bannerVisible, setBannerVisible] = useState(true);
+  const lastUpdated = "The API and scrapers have been closed on 13/09/25 due to GPU requirements and server costs, hence the news articles are old.Inconvenience is regretted.";
   // Map selectedCategory to API tags
   const tags = useMemo(() => {
     if (selectedCategory === "For You") return interestedTags;
@@ -93,6 +94,8 @@ const HomeScreen = ({ navigation }) => {
         </Text>
       </Appbar.Header>
 
+
+
       {/* Category Tabs (only for scroll view) */}
       {viewMode === "scroll" && (
         <View style={styles.tabsWrapper}>
@@ -106,14 +109,23 @@ const HomeScreen = ({ navigation }) => {
           />
         </View>
       )}
-
+      {bannerVisible && (
+        <View style={styles.banner}>
+          <Text style={styles.bannerText}>
+            News is updated till {lastUpdated}
+          </Text>
+          <TouchableOpacity onPress={() => setBannerVisible(false)}>
+            <Text style={styles.closeText}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       {/* Main content */}
       {viewMode === "swipe" ? (
         <SwipableCardContainer
           articles={displayedArticles}
           navigation={navigation}
-          onSwipeUp={() => {}}
-          onSwipeDown={() => {}}
+          onSwipeUp={() => { }}
+          onSwipeDown={() => { }}
           canLoadMore={canLoadMore}
           onLoadMore={loadMore}
           isLoadingMore={loading}
@@ -194,6 +206,25 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     letterSpacing: 0.5,
     paddingLeft: 16,
+  },
+  banner: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: Colors.accent.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  bannerText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  closeText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    // marginLeft: 12,
   },
   tabsWrapper: {
     backgroundColor: Colors.background.secondary,

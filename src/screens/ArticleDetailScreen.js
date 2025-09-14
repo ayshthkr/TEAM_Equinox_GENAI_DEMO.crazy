@@ -374,7 +374,7 @@ const ArticleDetailScreen = ({ route, navigation }) => {
                     <View style={styles.sourceList}>
                       {linkHosts.map((l, idx) => {
                         const score = article?.url_analysis?.[idx]?.score ?? null;
-                        const isNotReliable = score !== null && score <= 50;
+                        const isNotReliable = score !== null && (score <= 50 || score==0);
                         return (
 
                           <TouchableOpacity
