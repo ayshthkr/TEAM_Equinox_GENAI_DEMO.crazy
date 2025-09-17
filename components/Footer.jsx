@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h2 className="text-xl font-semibold text-text-primary">
-              DEMO.CRAZY (Team Equinox)
+              DEMO.crazy (Team Equinox)
             </h2>
             <p className="mt-3 text-sm text-text-secondary leading-relaxed">
               Stay informed with balanced perspectives. We bring you curated
@@ -57,7 +57,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-10 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-center text-sm text-text-secondary">
-          <p>© {new Date().getFullYear()} DEMO.CRAZY. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} DEMO.crazy. All rights reserved.</p>
         </div>
       </div>
     </footer>

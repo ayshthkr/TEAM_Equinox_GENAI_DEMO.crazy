@@ -10,7 +10,7 @@ import Link from "next/link";
 
 function ArticleSkeleton() {
   return (
-    <div className=" mx-auto animate-pulse">
+    <div className=" mx-8 animate-pulse">
       {/* Hero Skeleton */}
       <div className="relative w-full h-[220px] sm:h-[280px] md:h-[380px] lg:h-[500px] rounded-xl overflow-hidden shadow-lg bg-blue-600/30" />
 
@@ -206,7 +206,6 @@ export default function ArticlePage() {
 
 
         <div className="">
-          <h1>recommendiation</h1>
           <Recommendations currentId={article._id} tags={article.tag}/>
         </div>
 

@@ -1,7 +1,8 @@
 // components/MarketDashboard.tsx
 export default function MarketDashboard() {
   return (
-    <div className="flex flex-col  bg-surface border border-border rounded-2xl shadow-2xl h-full overflow-y-auto ">
+<div className="flex flex-col bg-surface border border-border rounded-2xl shadow-2xl 
+                w-[260px] h-[700px] overflow-y-auto">
       {/* Header */}
       <div className="flex items-center gap-3 px-6 pt-6 pb-3 border-b border-border bg-background/60">
         <span className="inline-flex items-center justify-center bg-accent/20 text-accent rounded-full w-10 h-10">

@@ -31,6 +31,7 @@ export default function CategoryPage() {
           title: a.headline,
           description: a.description || "",
           image: a.imgs?.[0] || null,
+          source: a.source || "Unknown Source", // ✅ Added source
           bias: {
             left: Math.round((a.bias_left || 0) * 100),
             center: Math.round((a.bias_center || 0) * 100),
@@ -65,7 +66,7 @@ export default function CategoryPage() {
   const rows = leftBlindspots.length;
 
   return (
-    <section className="px-4sm:px-6 lg:px-12 py-10 bg-background">
+    <section className="px-4 sm:px-6 lg:px-8 py-10 bg-background">
       <div className="max-w-full mx-auto">
         {/* Header */}
         <div className="mb-8 text-center">
@@ -132,39 +133,42 @@ function ArticleCard({ article, side }) {
   const accent = side === "left" ? "text-red-600" : "text-blue-600";
 
   return (
-    <article className="bg-surface rounded-xl shadow-sm hover:shadow-md transition overflow-hidden flex flex-col h-full">
-      <img
-        src={
-          article.image
-            ? article.image.startsWith("http")
-              ? article.image
-              : `${API_BASE}/${article.image}`
-            : "/placeholder.jpg"
-        }
-        alt={article.title}
-        className="w-full h-56 object-cover"
-      />
+    <Link
+      href={`/articles/${article.id}`}
+      className="block group h-full"
+    >
+      <article className="bg-surface rounded-xl shadow-sm hover:shadow-md transition overflow-hidden flex flex-col h-full cursor-pointer">
+        <img
+          src={
+            article.image
+              ? article.image.startsWith("http")
+                ? article.image
+                : `${API_BASE}/${article.image}`
+              : "/placeholder.jpg"
+          }
+          alt={article.title}
+          className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+        />
 
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-semibold text-base md:text-lg text-text-primary mb-2 line-clamp-2">
-          {article.title}
-        </h3>
+        <div className="p-4 flex flex-col flex-1">
 
-        <p className="text-sm text-text-secondary mb-2 line-clamp-3">
-          {article.description}
-        </p>
+          <h3 className="font-semibold text-base md:text-lg text-text-primary mb-2 line-clamp-2 group-hover:text-accent transition-colors">
+            {article.title}
+          </h3>
 
-        <BiasBar bias={article.bias} />
+          <p className="text-sm text-text-secondary mb-2 line-clamp-3">
+            {article.description}
+          </p>
 
-        <div className="mt-3 text-right">
-          <Link
-            href={`/articles/${article.id}`}
-            className={`text-sm font-medium ${accent} hover:opacity-90`}
-          >
-            Read more →
-          </Link>
+          <BiasBar bias={article.bias} />
+
+          <div className="mt-3 text-right">
+            <span className={`text-sm font-medium ${accent}`}>
+              Read more →
+            </span>
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </Link>
   );
 }

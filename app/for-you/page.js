@@ -2,17 +2,16 @@
 import { useEffect, useState } from "react";
 import { fetchArticles } from "@/lib/api";
 import BiasBar from "@/components/BiasBar";
-import Link from "next/link";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL; 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const PAGE_SIZE = 12;
+const fallbackImage = "/placeholder.jpg";
 
 export default function ForYouPage() {
   const [articles, setArticles] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-
-  const PAGE_SIZE = 12;
 
   async function loadArticles(reset = false) {
     try {
@@ -21,22 +20,22 @@ export default function ForYouPage() {
       const data = await fetchArticles({ limit: PAGE_SIZE + 1, skip });
 
       if (data?.articles?.length > 0) {
-        const clicks = JSON.parse(localStorage.getItem("clickedTags") || "{}");
-
         let allArticles = data.articles.map(mapArticle);
 
+        const clicks = JSON.parse(localStorage.getItem("clickedTags") || "{}");
+
         if (Object.keys(clicks).length > 0) {
-          const sortedTags = Object.entries(clicks)
-            .sort((a, b) => b[1] - a[1])
-            .map(([tag]) => tag);
+          const weight = (article) => {
+            const tags = Array.isArray(article.tag)
+              ? article.tag.map((t) => t.toLowerCase())
+              : [(article.tag || "").toLowerCase()];
 
-          const topTags = sortedTags.slice(0, 3);
+            return Object.entries(clicks).reduce((sum, [tag, count]) => {
+              return tags.includes(tag.toLowerCase()) ? sum + count : sum;
+            }, 0);
+          };
 
-          allArticles.sort((a, b) => {
-            const aMatch = a.tag && topTags.some((t) => a.tag.includes(t));
-            const bMatch = b.tag && topTags.some((t) => b.tag.includes(t));
-            return Number(bMatch) - Number(aMatch);
-          });
+          allArticles.sort((a, b) => weight(b) - weight(a));
         }
 
         if (reset) {
@@ -79,7 +78,7 @@ export default function ForYouPage() {
   }, []);
 
   return (
-    <section className="px-4 ">
+    <section className="px-8">
       <div className="mb-12 text-center max-w-2xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-bold text-text-primary tracking-tight">
           For You
@@ -120,7 +119,7 @@ function mapArticle(a) {
     title: a.headline,
     description: a.description || "",
     image: a.imgs?.[0] || null,
-    tag: a.tag || "",
+    tag: a.tag || [],
     bias:
       a.bias_left || a.bias_center || a.bias_right
         ? {
@@ -132,18 +131,37 @@ function mapArticle(a) {
   };
 }
 
-// 🔹 Card
+// 🔹 Card (whole card clickable + interest tracking)
 function ArticleCard({ article }) {
-  const fallbackImage = "/placeholder.jpg";
-
   const imageUrl = article.image
     ? article.image.startsWith("http")
       ? article.image
-      : `${API_URL}/${article.image}` 
+      : `${API_URL}/${article.image}`
     : fallbackImage;
 
+  const handleClick = () => {
+    // ✅ Track user interest
+    const clicks = JSON.parse(localStorage.getItem("clickedTags") || "{}");
+    const tags = Array.isArray(article.tag) ? article.tag : [article.tag];
+
+    tags.forEach((t) => {
+      if (!t) return;
+      const key = t.toLowerCase();
+      clicks[key] = (clicks[key] || 0) + 1;
+    });
+
+    localStorage.setItem("clickedTags", JSON.stringify(clicks));
+    window.dispatchEvent(new Event("tagsUpdated")); // trigger refresh
+
+    // ✅ Open article
+    window.location.href = `/articles/${article.id}`;
+  };
+
   return (
-    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group">
+    <div
+      onClick={handleClick}
+      className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group cursor-pointer"
+    >
       <div className="overflow-hidden">
         <img
           src={imageUrl}
@@ -166,12 +184,9 @@ function ArticleCard({ article }) {
           <BiasBar bias={article.bias} />
         </div>
 
-        <Link
-          href={`/articles/${article.id}`}
-          className="mt-auto pt-5 text-sm font-medium text-accent hover:text-accent-hover transition-colors inline-flex items-center gap-1"
-        >
+        <span className="mt-auto pt-5 text-sm font-medium text-accent group-hover:text-accent-hover transition-colors inline-flex items-center gap-1">
           Read more →
-        </Link>
+        </span>
       </div>
     </div>
   );

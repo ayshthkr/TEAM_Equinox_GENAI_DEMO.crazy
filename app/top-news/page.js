@@ -73,7 +73,8 @@ export default function TopNewsPage() {
   }));
 
   return (
-    <div className="max-w-6xl mx-auto px-4  space-y-10">
+    <section className="px-4">
+    <div className=" px-4  space-y-10">
       {/* Page Heading */}
       <h1 className="text-3xl sm:text-4xl font-extrabold text-text-primary text-center mb-6">
         📰 Top News
@@ -141,66 +142,65 @@ export default function TopNewsPage() {
 
       {/* Category grid */}
       <section>
-        <h2 className="text-xl sm:text-2xl font-bold mb-6">
-          🌍 Top News by Category
-        </h2>
+  <h2 className="text-xl sm:text-2xl font-bold mb-6">
+    🌍 Top News by Category
+  </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map(({ tag, article }) => (
-            <div
-              key={tag}
-              className="flex flex-col bg-surface border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition"
-            >
-              {/* Category name */}
-              <div className="px-4 pt-3">
-                <h3 className="text-base sm:text-lg font-semibold mb-2">
-                  {tag}
-                </h3>
-              </div>
-
-              {/* Article Card */}
-              {article.imgs?.[0] ? (
-                <img
-                  src={article.imgs[0]}
-                  alt={article.headline || "category story"}
-                  className="w-full h-40 object-cover"
-                />
-              ) : (
-                <div className="w-full h-40 bg-gray-800/30" />
-              )}
-
-              <div className="p-4 flex flex-col flex-1">
-                <h4 className="font-semibold text-text-primary mb-2 line-clamp-2 min-h-[3rem]">
-                  {article.headline}
-                </h4>
-
-                <p className="text-xs text-text-secondary mb-3">
-                  {(article.urls?.length || 0)} sources
-                </p>
-
-                <div className="mb-3">
-                  <BiasBar
-                    bias={{
-                      left: Math.round((article.bias_left || 0) * 100),
-                      center: Math.round((article.bias_center || 0) * 100),
-                      right: Math.round((article.bias_right || 0) * 100),
-                    }}
-                  />
-                </div>
-
-                <div className="mt-auto">
-                  <Link
-                    href={`/articles/${article._id}`}
-                    className="text-sm font-medium text-accent hover:underline"
-                  >
-                    Read more →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {categories.map(({ tag, article }) => (
+      <Link
+        key={tag}
+        href={`/articles/${article._id}`}
+        className="group flex flex-col bg-surface border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer"
+      >
+        {/* Category name */}
+        <div className="px-4 pt-3">
+          <h3 className="text-base sm:text-lg font-semibold mb-2 group-hover:text-accent transition-colors">
+            {tag}
+          </h3>
         </div>
-      </section>
+
+        {/* Article Card */}
+        {article.imgs?.[0] ? (
+          <img
+            src={article.imgs[0]}
+            alt={article.headline || "category story"}
+            className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-40 bg-gray-800/30" />
+        )}
+
+        <div className="p-4 flex flex-col flex-1">
+          <h4 className="font-semibold text-text-primary mb-2 line-clamp-2 min-h-[3rem] group-hover:text-accent transition-colors">
+            {article.headline}
+          </h4>
+
+          <p className="text-xs text-text-secondary mb-3">
+            {(article.urls?.length || 0)} sources
+          </p>
+
+          <div className="mb-3">
+            <BiasBar
+              bias={{
+                left: Math.round((article.bias_left || 0) * 100),
+                center: Math.round((article.bias_center || 0) * 100),
+                right: Math.round((article.bias_right || 0) * 100),
+              }}
+            />
+          </div>
+
+          <div className="mt-auto text-right">
+            <span className="text-sm font-medium text-accent group-hover:underline">
+              Read more →
+            </span>
+          </div>
+        </div>
+      </Link>
+    ))}
+  </div>
+</section>
+
 
       {/* Load More */}
       {hasMore && (
@@ -215,5 +215,6 @@ export default function TopNewsPage() {
         </div>
       )}
     </div>
+    </section>
   );
 }

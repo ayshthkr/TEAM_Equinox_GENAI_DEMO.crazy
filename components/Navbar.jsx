@@ -39,13 +39,13 @@ export default function Navbar() {
         requirements and server costs, hence the news articles are old.
         Inconvenience is regretted.
       </div>
-      <div className="max-w-7xl mx-auto px-6 flex h-14 items-center justify-between">
+<div className="max-w-[90rem] mx-4 sm:mx-5 md:mx-7 px-2 sm:px-4 md:px-4 flex h-14 items-center justify-between">
         {/* Logo */}
         <Link
           href="/"
           className="text-xl font-extrabold tracking-tight text-white"
         >
-          DEMO.CRAZY
+          DEMO<span className=" text-blue-500 ">.crazy</span>
         </Link>
 
         {/* Desktop nav */}

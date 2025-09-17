@@ -34,7 +34,7 @@ export default function CategoryBar() {
             .sort(([, countA], [, countB]) => countB - countA)
             .map(([tag]) => tag);
 
-          setTags(sortedTags.slice(0, 9));
+          setTags(sortedTags.slice(0, 10));
         }
       } catch (error) {
         console.error("Failed to fetch tags:", error);
