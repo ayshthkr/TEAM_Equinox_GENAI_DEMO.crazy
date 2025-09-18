@@ -99,7 +99,26 @@ TEAM_Equinox_GENAI_DEMO.crazy/
 │   │   ├── top-news/page.jsx
 │   │   └── page.jsx
 │   ├── package.json
-|   └── app.json
+│   └── app.json
+│
+├── fake-news-pipeline/
+│   ├── configs/
+│   ├── data/
+│   │   ├── external/
+│   │   ├── processed/
+│   │   ├── raw/
+│   │   ├── liar_train.csv
+│   │   ├── liar_test.csv
+│   │   ├── liar_validation.csv
+│   │   ├── processed_liar_dataset.csv
+│   │   └── dataset_summary.json
+│   ├── 1_pre.ipynb
+│   ├── 2_train.ipynb
+│   ├── 3_pipeline.ipynb
+│   ├── 4_integration.ipynb
+│   ├── .env.example
+│   ├── main.py
+│   └── pipeline.py
 │
 └── README.md
 

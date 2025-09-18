@@ -1,0 +1,22 @@
+{
+  "LIAR": {
+    "status": "MISSING",
+    "files": 0,
+    "total_samples": 0
+  },
+  "FakeNewsNet": {
+    "status": "SUCCESS",
+    "files": 4,
+    "total_samples": 23196
+  },
+  "Indian Context": {
+    "status": "SUCCESS",
+    "files": 2,
+    "total_samples": 1426
+  },
+  "Sentiment Analysis": {
+    "status": "SUCCESS",
+    "files": 1,
+    "total_samples": 7259
+  }
+}
