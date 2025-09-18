@@ -1,0 +1,76 @@
+// src/screens/ReelsScreen.js
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  StyleSheet,
+  StatusBar,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import SwipableCardContainer from '../components/SwipableCardContainer';
+import { convertJsonToAppFormat } from '../data/dataAdapter';
+import Colors from '../constants/colors';
+import useArticles from '../hooks/useArticles';
+
+
+const ReelsScreen = ({ navigation }) => {
+  const {
+    articles,
+    loading,
+    refreshing,
+    canLoadMore,
+    loadMore,
+    refresh,
+    error,
+  } = useArticles({  limit: 20 });
+  // const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadArticles();
+  }, []);
+
+  const loadArticles = async () => {
+    setLoading(true);
+    try {
+      // Simulate loading time for better UX
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const allArticles = convertJsonToAppFormat();
+      setArticles(allArticles);
+    } catch (error) {
+      console.error('Error loading articles:', error);
+      setArticles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <StatusBar 
+        barStyle="light-content" 
+        backgroundColor={Colors.background.primary}
+        translucent={true}
+      />
+      
+      {!loading && articles.length > 0 && (
+       <SwipableCardContainer
+          articles={articles}
+          navigation={navigation}
+          onSwipeUp={() => {}}
+          onSwipeDown={() => {}}
+          canLoadMore={canLoadMore}
+          onLoadMore={loadMore}
+          isLoadingMore={loading}
+        />
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background.primary,
+  },
+});
+
+export default ReelsScreen;
