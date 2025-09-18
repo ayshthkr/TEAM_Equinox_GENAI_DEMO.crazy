@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0D1B2A;
+  --foreground: #E0E1DD;
+}
+
+@theme inline {
+  /* Base colors */
+  --color-background: var(--background);
+  --color-surface: #1B263B;
+  --color-border: #415A77;
+
+  /* Text */
+  --color-text-primary: #E0E1DD;
+  --color-text-secondary: #778DA9;
+
+  /* Accent / Interactive */
+  --color-accent: #1B9AAA;
+  --color-accent-hover: #00A8E8;
+
+  /* Status */
+  --color-success: #06D6A0;
+  --color-warning: #FFD166;
+  --color-error: #EF476F;
+
+  /* Fonts (your Geist setup) */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0D1B2A;
+    --foreground: #E0E1DD;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
