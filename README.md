@@ -46,17 +46,13 @@ Check out the live demos here:
 **Dashboard I Designed**  
 ![Dashboard](https://github.com/ayshthkr/TEAM_Equinox_GENAI_DEMO.crazy/blob/dev/website/public/main_1.png?raw=true)
 
-**Mobile View I Implemented**  
-![Mobile](https://github.com/ayshthkr/TEAM_Equinox_GENAI_DEMO.crazy/blob/dev/app/assets/mobile_1.jpeg?raw=true)
 
 **Website News Feed**  
 ![Website](https://github.com/ayshthkr/TEAM_Equinox_GENAI_DEMO.crazy/blob/dev/website/public/main_2.png?raw=true)
 
-**App Reels Feature**  
+**Mobile View I Implemented**  
+![Mobile](https://github.com/ayshthkr/TEAM_Equinox_GENAI_DEMO.crazy/blob/dev/app/assets/mobile_1.jpeg?raw=true)
 ![App Reels](https://github.com/ayshthkr/TEAM_Equinox_GENAI_DEMO.crazy/blob/dev/app/assets/mobile_2.jpeg?raw=true)
-
-
-
 
 <br />
 
