@@ -21,7 +21,7 @@ An AI-powered news analysis platform that aggregates headlines, detects misinfor
 ## Key Features Implemented
 
 - **News Aggregation**: Curated trusted Indian and global sources, fetching fresh articles every 12 hours to avoid spam and overload.  
-- **Bias Detection**: Built transformer-based classifiers to label articles on a Left–Center–Right scale, helping users see multiple perspectives.  
+- **Bias Detection**: Built embedding-based classifiers to label articles on a Left–Center–Right scale, helping users see multiple perspectives.  
 - **Misinformation Checks**: Applied NLP and fact-matching to flag sensational language, dubious claims, and possible deepfakes.  
 - **Performance**: Focused on accuracy over real-time speed by running batch analysis with model ensembles for higher precision.  
 - **Accessibility**: Added multilingual support (English + Hindi) with simple explanations so students, journalists, and casual readers can all benefit.  
