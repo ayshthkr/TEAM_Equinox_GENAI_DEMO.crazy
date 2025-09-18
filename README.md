@@ -44,16 +44,16 @@ Check out the live demos here:
 ## Screenshots
 
 **Dashboard I Designed**  
-![Dashboard](https://placehold.co/600x300?text=Dashboard+Placeholder "Shows the main interface I created")
+![Dashboard](https://github.com/ayshthkr/TEAM_Equinox_GENAI_DEMO.crazy/blob/dev/website/public/main_1.png?raw=true)
 
 **Mobile View I Implemented**  
-![Mobile](https://placehold.co/300x600?text=Mobile+Placeholder "Demonstrates responsive design I developed")
+![Mobile](https://github.com/ayshthkr/TEAM_Equinox_GENAI_DEMO.crazy/blob/dev/app/assets/mobile_1.png?raw=true)
 
 **Website News Feed**  
-![Website](https://placehold.co/600x300?text=Website+News+Feed "Displays news articles with bias/misinformation indicators")
+![Website](https://github.com/ayshthkr/TEAM_Equinox_GENAI_DEMO.crazy/blob/dev/website/public/main_2.png?raw=true)
 
 **App Reels Feature**  
-![App Reels](https://placehold.co/300x600?text=App+Reels+Placeholder "Shows reels-style article browsing in the mobile app")
+![App Reels](https://github.com/ayshthkr/TEAM_Equinox_GENAI_DEMO.crazy/blob/dev/app/assets/mobile_2.png?raw=true)
 
 
 
