@@ -6,6 +6,7 @@ export default function NewsCard({ news }) {
 
   return (
     <Link
+      prefetch={false}
       href={linkHref}
       target={news.id ? "_self" : "_blank"}
       rel={news.id ? undefined : "noreferrer"}

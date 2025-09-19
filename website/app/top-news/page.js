@@ -98,6 +98,7 @@ export default function TopNewsPage() {
               {hero.headline || hero.title}
             </h2>
             <Link
+              prefetch={false}
               href={`/articles/${hero._id}`}
               className="text-sm md:text-base text-accent font-medium hover:underline"
             >
@@ -113,6 +114,7 @@ export default function TopNewsPage() {
         <div className="space-y-4">
           {trending.map((item, idx) => (
             <Link
+              prefetch={false}
               key={item._id}
               href={`/articles/${item._id}`}
               className="flex items-start gap-4 p-4 rounded-lg bg-surface border border-border hover:border-accent transition"
@@ -149,6 +151,7 @@ export default function TopNewsPage() {
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     {categories.map(({ tag, article }) => (
       <Link
+        prefetch={false}
         key={tag}
         href={`/articles/${article._id}`}
         className="group flex flex-col bg-surface border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer"

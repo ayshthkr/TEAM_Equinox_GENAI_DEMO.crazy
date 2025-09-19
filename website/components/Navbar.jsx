@@ -42,6 +42,7 @@ export default function Navbar() {
 <div className="max-w-[90rem] mx-4 sm:mx-5 md:mx-7 px-2 sm:px-4 md:px-4 flex h-14 items-center justify-between">
         {/* Logo */}
         <Link
+        prefetch={false}
           href="/"
           className="text-xl font-extrabold tracking-tight text-white"
         >
@@ -54,6 +55,7 @@ export default function Navbar() {
             const isActive = pathname === t.href;
             return (
               <Link
+              prefetch={false}
                 key={t.href}
                 href={t.href}
                 className={`relative text-sm transition-colors duration-200 ${
@@ -122,6 +124,7 @@ export default function Navbar() {
 
           <SignedOut>
             <Link
+              prefetch={false}
               href="/login"
               className="px-4 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700
                          text-sm font-medium text-white hidden md:inline-block"
@@ -151,6 +154,7 @@ export default function Navbar() {
             const isActive = pathname === t.href;
             return (
               <Link
+              prefetch={false}
                 key={t.href}
                 href={t.href}
                 onClick={() => setMobileOpen(false)} // close menu on click
@@ -167,6 +171,7 @@ export default function Navbar() {
 
           <SignedOut>
             <Link
+              prefetch={false}
               href="/login"
               onClick={() => setMobileOpen(false)}
               className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700

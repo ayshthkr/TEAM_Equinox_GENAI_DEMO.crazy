@@ -117,6 +117,7 @@ function ArticleSkeleton() {
           {tags.map((tag, idx) => (
       
             <Link
+              prefetch={false}
               href={`/tag/${tag}`}
               key={idx}
               className="px-3 py-1 rounded-full border border-border bg-surface text-xs font-medium text-text-secondary hover:bg-accent hover:text-white transition"

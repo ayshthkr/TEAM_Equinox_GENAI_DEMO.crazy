@@ -36,6 +36,7 @@ export default function Footer() {
             <ul className="mt-3 space-y-2 text-sm">
               <li>
                 <Link
+                  prefetch={false}
                   href="/help"
                   className="text-text-secondary hover:text-accent"
                 >
@@ -44,6 +45,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  prefetch={false}
                   href="/privacy"
                   className="text-text-secondary hover:text-accent"
                 >
