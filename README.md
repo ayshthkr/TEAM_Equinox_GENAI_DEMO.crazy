@@ -294,7 +294,7 @@ Here’s a quick snapshot of what powers **DEMO.crazy**:
 - 🧠 **~10 min pipeline** – from embeddings → clustering → ML bias/fake news detection → article generation  
 - 💻 **Economical compute** – runs comfortably on a single 8GB VRAM GPU  
 - 🌐 **10 website routes** – covering news, analysis, and insights  
-- 📱 **3 mobile app screens** – including reels-style news browsing  
+- 📱 **6 mobile app screens** – including reels-style news browsing  
 - 🔍 **Bias-aware insights** – Left/Center/Right classification with visual cues
 - 🧩 **Explainable AI** – highlights why an article may be misleading  
 
