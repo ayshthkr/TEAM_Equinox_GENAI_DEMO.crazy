@@ -24,19 +24,14 @@ An AI-powered news analysis platform that aggregates headlines, detects misinfor
 - **Bias Detection**: Built embedding-based classifiers to label articles on a Left–Center–Right scale, helping users see multiple perspectives.  
 - **Misinformation Checks**: Applied NLP and fact-matching to flag sensational language, dubious claims, and possible deepfakes.  
 - **Performance**: Focused on accuracy over real-time speed by running batch analysis with model ensembles for higher precision.  
-- **Accessibility**: Added multilingual support (English + Hindi) with simple explanations so students, journalists, and casual readers can all benefit.  
-
-
-
-
 <br />
 
 ## Demo
 
 Check out the live demos here:  
 
-- 🌐 **Website**: [Live Demo](xxx)  
-- 📱 **Mobile App**: [APK Link](xxx)  
+- 🌐 **Website**: [Live Demo](https://news-app-pink-three-77.vercel.app/)
+- 📱 **Mobile App**: [APK Link](TEAM_Equinox_GENAI_DEMO.crazy\DEMO-CRAZY.apk)  
 
 
 
@@ -142,7 +137,7 @@ cd server
 python -m venv venv
 source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+python backend.py
 ```
 
 Server runs at `http://localhost:8000`
@@ -299,7 +294,7 @@ Here’s a quick snapshot of what powers **DEMO.crazy**:
 - 🧠 **~10 min pipeline** – from embeddings → clustering → ML bias/fake news detection → article generation  
 - 💻 **Economical compute** – runs comfortably on a single 8GB VRAM GPU  
 - 🌐 **10 website routes** – covering news, analysis, and insights  
-- 📱 **3 mobile app screens** – including reels-style news browsing  
+- 📱 **4 mobile app screens** – including reels-style news browsing  
 - 🔍 **Bias-aware insights** – Left/Center/Right classification with visual cues
 - 🧩 **Explainable AI** – highlights why an article may be misleading  
 
