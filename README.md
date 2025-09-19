@@ -31,7 +31,7 @@ An AI-powered news analysis platform that aggregates headlines, detects misinfor
 Check out the live demos here:  
 
 - 🌐 **Website**: [Live Demo](https://news-app-pink-three-77.vercel.app/)
-- 📱 **Mobile App**: [APK Link](TEAM_Equinox_GENAI_DEMO.crazy\DEMO-CRAZY.apk)  
+- 📱 **Mobile App**: [APK Link](DEMO-CRAZY.apk)  
 
 
 
