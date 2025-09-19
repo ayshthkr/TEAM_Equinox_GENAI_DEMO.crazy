@@ -6,10 +6,11 @@ from pydantic import BaseModel
 import uvicorn
 import logging
 
-from toi_utils import scrape_and_export
-from thehindustan import scrape_and_export_hindustan_times
-from thehindu_utils import scrape_hindu_news
-from thedailyjagran_utils import scrape_jagran
+
+from scrapers.toi_utils import scrape_and_export
+from scrapers.thehindustan import scrape_and_export_hindustan_times
+from scrapers.thehindu_utils import scrape_hindu_news
+from scrapers.thedailyjagran_utils import scrape_jagran
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
