@@ -36,7 +36,7 @@ Check out the live demos here:
 ## Project Showcase
 
 
-- 🌐 **VideO**: [Link](https://www.youtube.com/watch?v=cYUf2GJOhaM)
+- 🌐 **Video**: [Link](https://www.youtube.com/watch?v=cYUf2GJOhaM)
 
 
 
