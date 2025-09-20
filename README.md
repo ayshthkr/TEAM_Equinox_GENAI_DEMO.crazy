@@ -33,6 +33,12 @@ Check out the live demos here:
 - 🌐 **Website**: [Live Demo](https://demo-crazy.vercel.app/)
 - 📱 **Mobile App**: [APK Link](DEMO-CRAZY.apk)  
 
+## Project Showcase
+
+
+- 🌐 **VideO**: [Link](https://www.youtube.com/watch?v=cYUf2GJOhaM)
+
+
 
 
 
